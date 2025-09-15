@@ -12,9 +12,8 @@ def ParseMBox(path):
         print("Date:", message["date"])
         print("Body:", message.get_payload())
         print("="*50)'''
-    phishing_mailList = [message for message in mbox]
-    for message in mbox:
-        phishing_mailList.append(message)
+    phishing_mailList = [message for message in mbox] 
+    #turn it into a list cause idk what format mbox is in
     return phishing_mailList
 
 def CheckWords(mailList, wordDict):
@@ -33,29 +32,29 @@ def CheckWords(mailList, wordDict):
     
 
 def SortDict(wordDict):
-    '''Sort the dictionary by value in descending order
+    '''Sorts and returns the dictionary by amount in descending order
     '''
     sortedDict = dict(sorted(wordDict.items(), key=lambda item: item[1], reverse=True))
     return sortedDict
 
 def WriteToFile(wordDict):
+    '''Write the dictionary to a file
+    '''
     f = open("wordCount.txt", "w")
     for key, value in wordDict.items():
-        try:
+        try: #there was an encoding error here once
             f.write(f"{key}: {value}\n")
         except:
             continue
     f.close()
 
 if __name__=='__main__':
-    wordDict = {}
+    wordDict = {} #initialize empty dictionary
     CheckWords(ParseMBox("../phishing_dataset/phishing0.mbox"), wordDict)
     CheckWords(ParseMBox("../phishing_dataset/phishing1.mbox"), wordDict)
     CheckWords(ParseMBox("../phishing_dataset/phishing2.mbox"), wordDict)
-    #print(len(phishing_mailList)) 414
-    #for i in range(len(phishing_mailList)):
-        #print(phishing_mailList[i]["subject"])
-    #    CheckWords(str(phishing_mailList[i]["subject"]), wordDict)
+
+
     wordDict = SortDict(wordDict)
     WriteToFile(wordDict)
     
