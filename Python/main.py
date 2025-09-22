@@ -1,6 +1,7 @@
 from email import message_from_file
 import mailbox
 from html.parser import HTMLParser
+from email.header import decode_header
 
 class HTMLStripper(HTMLParser):
     def __init__(self):
@@ -71,19 +72,45 @@ def WriteToFile(wordDict: dict):
     f.close()
 
 def ScanEmail(email: mailbox.mboxMessage):
-    '''Scan the email for suspicious words
+    '''Scan the email for suspicious words if there are suspicious words found it would check if it is the first 100 words of the email body.
+    Decode the subject line of the email.
     '''
+    #Decodes the subject line. If it does not need to be decoded it will still pass
+    #risck score for subject and position based on the word doc
+    subject = email['subject']
+    subject = decode_header(subject)
+    subject = ''.join(part.decode(charset or 'utf-8') if isinstance(part, bytes) else part for part, charset in subject)
+    subject = subject.lower()
+#    print(subject)
+    global riskScore
+
+    print(f"\n\nIn subject line:")
+    for i in suspiciouswords:
+        if i in subject:
+            print(f"Found suspicious word '{i}' in subject line.")
+            riskScore += 15
+
+    print(f"\n\nIn email body:")
+    
     for word in suspiciouswords:
         if word in email.get_payload():
             #potentially faster if using dictionary/list maybe?
 
             print(f"Found suspicious word '{word}' in email.")
             # say out the word found
-
-            global riskScore
+            
             riskScore += 1
             #place holder until we decide how riskScoring will work
-            pass
+
+            first_100_words = email.get_payload().split() 
+            first_100_words = first_100_words[:100]
+
+            for position in first_100_words:
+                if word == position:
+                    print(f"'{word}' is in the first 100 words of the email.\n")
+                    riskScore += 10
+    pass
+
 
 def SetSuspiciousWords(path: str):
     '''Set the list of suspicious words
