@@ -1,22 +1,44 @@
+from email import message_from_file
 import mailbox
+from html.parser import HTMLParser
+
+class HTMLStripper(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.data = []
+    def handle_data(self, d):
+        self.data.append(d)
+    def get_data(self):
+        return ''.join(self.data)
+
+def strip_html(html):
+    s = HTMLStripper()
+    s.feed(html)
+    return s.get_data()
 
 
-def ParseMBox(path):
+def ParseMBox(path: str):
     '''Parse the mbox file and return a list of email messages
     '''
     mbox = mailbox.mbox(path)
-    '''for message in mbox:
-        print("Subject:", message["subject"])
-        print("From:", message["from"])
-        print("To:", message["to"])
-        print("Date:", message["date"])
-        print("Body:", message.get_payload())
-        print("="*50)'''
     phishing_mailList = [message for message in mbox] 
     #turn it into a list cause idk what format mbox is in
     return phishing_mailList
 
-def CheckWords(mailList, wordDict):
+def ParseSingleMbox(path: str):
+    '''Parse a single mbox file and return the email message
+    '''
+    mbox = mailbox.mbox(path)
+    return mbox[0] #return the first email in the mbox file
+
+def ParseEmail(path: str):
+    '''Parse a single email file and return the email message
+    '''
+    with open(path, "r") as f:
+        email = message_from_file(f)
+    return email
+
+def CheckWords(mailList: list, wordDict: dict):
     '''
     Check the words in the subject of the email in the list\n
     If the word is already in the dictionary, it increments the count by 1\n
@@ -31,13 +53,13 @@ def CheckWords(mailList, wordDict):
                 wordDict.update({word:1})
     
 
-def SortDict(wordDict):
+def SortDict(wordDict: dict) -> dict:
     '''Sorts and returns the dictionary by amount in descending order
     '''
     sortedDict = dict(sorted(wordDict.items(), key=lambda item: item[1], reverse=True))
     return sortedDict
 
-def WriteToFile(wordDict):
+def WriteToFile(wordDict: dict):
     '''Write the dictionary to a file
     '''
     f = open("wordCount.txt", "w")
@@ -48,13 +70,71 @@ def WriteToFile(wordDict):
             continue
     f.close()
 
+def ScanEmail(email: mailbox.mboxMessage):
+    '''Scan the email for suspicious words
+    '''
+    for word in suspiciouswords:
+        if word in email.get_payload():
+            #potentially faster if using dictionary/list maybe?
+
+            print(f"Found suspicious word '{word}' in email.")
+            # say out the word found
+
+            global riskScore
+            riskScore += 1
+            #place holder until we decide how riskScoring will work
+            pass
+
+def SetSuspiciousWords(path: str):
+    '''Set the list of suspicious words
+    '''
+    global suspiciouswords
+    file = open(path, "r")
+    suspiciouswords = file.read().splitlines()
+    file.close()
+    pass
+
+def PrintMultiPartMBox(mbox: mailbox.mboxMessage):
+    '''Print the parts of a multipart mbox file
+    '''
+    for part in mbox.get_payload():
+        print(part)
+        print("NEXT NEXT NEXT NEXT\n")
+
+def CleanText(msg: mailbox.mboxMessage):
+    '''Extract texts from an email message, handling both plain text and HTML parts,
+    then subsequently set it as the new payload of the email message.'''
+    plainText = htmlText = ""
+    #if msg.is_multipart():
+    for part in msg.get_payload():
+        if part.get_content_type() == "text/plain":
+            plainText = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="replace")
+        elif part.get_content_type() == "text/html":
+            html = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="replace")
+            htmlText = strip_html(html)
+    plainText += htmlText
+    cleanText = plainText.replace("\n", "").replace("\t", "")
+    print(cleanText)
+    msg.set_payload(cleanText)
+
+    pass
 if __name__=='__main__':
-    wordDict = {} #initialize empty dictionary
-    CheckWords(ParseMBox("../phishing_dataset/phishing0.mbox"), wordDict)
-    CheckWords(ParseMBox("../phishing_dataset/phishing1.mbox"), wordDict)
-    CheckWords(ParseMBox("../phishing_dataset/phishing2.mbox"), wordDict)
+    #wordDict = {} #initialize empty dictionary
+    #CheckWords(ParseMBox("../phishing_dataset/phishing0.mbox"), wordDict)
+    #CheckWords(ParseMBox("../phishing_dataset/phishing1.mbox"), wordDict)
+    #CheckWords(ParseMBox("../phishing_dataset/phishing2.mbox"), wordDict)
+    #wordDict = SortDict(wordDict)
+    #WriteToFile(wordDict)
+    #everything above is for word frequency analysis, not yet finished
+    #=========================================================================
 
 
-    wordDict = SortDict(wordDict)
-    WriteToFile(wordDict)
+    riskScore = 0
+    suspiciouswords = []                                #initialize empty list
+    SetSuspiciousWords("sampleWordList.txt")            #set the suspicious words from the file
+    emailToScan = ParseSingleMbox("sampleEmail1.txt")   #parse the sampleEmail to readable status
+    #PrintMultiPartMBox(emailToScan)            
+    CleanText(emailToScan)                              #cleans the text of the email & remove the html if neccesary
+    ScanEmail(emailToScan)                              #scan the email for suspicious words
+
     
