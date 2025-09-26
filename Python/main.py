@@ -7,6 +7,10 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from email.utils import parseaddr
 
+#for .eml files parsing
+from email import policy
+from email.parser import BytesParser
+
 import DomainChecks as dc #this is for whitelist check and edit distance check
 
 class HTMLStripper(HTMLParser):
@@ -23,6 +27,28 @@ def strip_html(html):
     s.feed(html)
     return s.get_data()
 
+def detect_email_filetype(filepath: str) -> str:
+    """
+    Detect whether a file is in mbox or eml format.
+    Returns: "mbox", "eml", or "unknown"
+    """
+    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            line = line.strip()
+            if line:  # skip blank lines
+                first_line = line
+                break
+        else:
+            return "unknown"  # empty file
+
+    if first_line.startswith("From "):  # mbox separator line
+        return "mbox"
+
+    eml_headers = ("Return-Path:", "From:", "To:", "Subject:", "Date:")
+    if any(first_line.startswith(h) for h in eml_headers):
+        return "eml"
+
+    return "unknown"
 
 def ParseMBox(path: str):
     '''Parse the mbox file and return a list of email messages
@@ -37,6 +63,14 @@ def ParseSingleMbox(path: str):
     '''
     mbox = mailbox.mbox(path)
     return mbox[0] #return the first email in the mbox file
+
+def ParseSingleEML(path: str):
+    """
+    Parse a single .eml file and return an EmailMessage object.
+    """
+    with open(path, "rb") as f:
+        msg = BytesParser(policy=policy.default).parse(f)
+    return msg
 
 def ParseEmail(path: str):
     '''Parse a single email file and return the email message
@@ -257,9 +291,16 @@ if __name__=='__main__':
     
     suspiciouswords = []                                #initialize empty list
     SetSuspiciousWords("sampleWordList.txt")            #set the suspicious words from the file
-    emailToScan = ParseSingleMbox("sampleEmail1.txt")   #parse the sampleEmail to readable status
     
-    #PrintMultiPartMBox(emailToScan)
+    file = "sampleEmail3.txt"
+    filetype = detect_email_filetype(file) #checks if email is .mbox or .eml
+    print(filetype)
+    if filetype == "mbox":
+        emailToScan = ParseSingleMbox(file)   #parse the sampleEmail to readable status for mbox files
+        #PrintMultiPartMBox(emailToScan)
+    elif filetype == "eml":
+        emailToScan = ParseSingleEML(file)    #parse the sampleEmail to readable status for eml files
+    
 
     #initialize whitelisted domains
     WhitelistedDomains = dc.LoadWhitelistedDomains("sampleWhitelistedDomains.txt")
