@@ -16,7 +16,8 @@ from email.parser import BytesParser
 #for handling multiple datasets in a directory
 import os
 
-import DomainChecks as dc #this is for whitelist check and edit distance check
+#for whitelist check and edit distance check
+import DomainChecks as dc
 
 class HTMLStripper(HTMLParser):
     def __init__(self):
@@ -247,10 +248,10 @@ if __name__=='__main__':
     cleanText, urls = CleanText(emailToScan)      #cleans the text of the email & remove the html if neccesary
 
     sender = dc.GetSender(emailToScan) #gets sender email address from the "from" header in the email
-    riskScore=dc.CheckWhitelistedDomain(sender,riskScore,WhitelistedDomains) #checks if the sender's domain is whitelisted and add to risk score if not
+    riskScore = dc.CheckWhitelistedDomain(sender,riskScore,WhitelistedDomains) #checks if the sender's domain is whitelisted and add to risk score if not
     print(riskScore)
     if riskScore > 0:#if email fails whitelist check
-        riskScore=dc.check_sender_levenshtein(sender,WhitelistedDomains,riskScore) #edit distance check 
+        riskScore = dc.check_sender_levenshtein(sender,WhitelistedDomains,riskScore) #edit distance check 
         print(riskScore)
 
     riskScore += ScanEmail.ScanEmail(emailToScan, urls)                        #scan the email for suspicious words

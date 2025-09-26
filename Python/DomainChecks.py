@@ -1,5 +1,3 @@
-
-
 from email.utils import parseaddr
 from Levenshtein import distance
 
@@ -135,7 +133,7 @@ def levenshtein(source: str, target: str) -> int:
     # The last cell = distance between full source and full target
     return prev_distances[-1]
 
-def check_sender_levenshtein(sender:str,whitelist:list,riskScore:int):
+def check_sender_levenshtein(sender:str, whitelist:list, riskScore:int):
     '''
     Check if the sender's email domain is visually similar to the domains in the whitelist.
     - If visually similar: add a penalty to the riskScore
@@ -148,18 +146,18 @@ def check_sender_levenshtein(sender:str,whitelist:list,riskScore:int):
     '''
     for w in whitelist:
         #print(f'sender:{sender},whitelisted email:{w}')
-        dist = levenshtein(sender,w)
-        #print(f"levenshtein distance:{dist}")
-        if dist<2:
-            print(f"Sender email {sender} is similar to {w} as levenshtein distance is {dist}.")
-            riskScore+=30
+        distance = levenshtein(sender,w)
+        
+        #print(f"levenshtein distance:{distance}")
+        if distance >= 2:
+            print(f"Sender email {sender} is similar to {w} as levenshtein distance is {distance}.")
+            riskScore += 30
             return riskScore
 
     print("Sender email passed edit distance check")
     return riskScore
 
 
-#print(levenshtein("kitten", "sitting"))
 if __name__=='__main__':
     # test = {
     # "From": "John","phisher@bad.com"
