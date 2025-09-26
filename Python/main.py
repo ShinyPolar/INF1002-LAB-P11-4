@@ -1,90 +1,9 @@
-from email import message_from_file
-import mailbox
 from html.parser import HTMLParser
 from email.header import decode_header
-from email.utils import parseaddr
-
-class HTMLStripper(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.data = []
-    def handle_data(self, d):
-        self.data.append(d)
-    def get_data(self):
-        return ''.join(self.data)
-
-def strip_html(html):
-    s = HTMLStripper()
-    s.feed(html)
-    return s.get_data()
-
-
-def ParseMBox(path: str):
-    '''Parse the mbox file and return a list of email messages
-    '''
-    mbox = mailbox.mbox(path)
-    phishing_mailList = [message for message in mbox] 
-    #turn it into a list cause idk what format mbox is in
-    return phishing_mailList
-
-def ParseSingleMbox(path: str):
-    '''Parse a single mbox file and return the email message
-    '''
-    mbox = mailbox.mbox(path)
-    return mbox[0] #return the first email in the mbox file
-
-def ParseEmail(path: str):
-    '''Parse a single email file and return the email message
-    '''
-    with open(path, "r") as f:
-        email = message_from_file(f)
-    return email
-
-def CheckWhitelistedDomain(email):
-    '''
-    Check if the sender's email domain is in the whitelist.
-    - If whitelisted: return the same riskScore.
-    - If not whitelisted: add a penalty to the riskScore.
-    
-    Args:
-        email: parsed email object (dict-like with "From" header).
-    '''
-
-    global riskScore
-    penalty = 20
-
-    #gets sender email address via the from header,
-    sender = email.get("From")
-    # print(f'Sender: {sender}')
-
-    #if no sender from header, flag as suspicious and add penalty to risk score
-    if not sender:
-        print(f'\nSuspicious email detected. No sender found')
-        riskScore+=penalty
-        return
-
-    #splits the from header into display name + email address
-    dispName, addr = parseaddr(sender)
-    # print(f'Display Name:{dispName}, Domain: {addr}')
-
-    #if "@" not in addr, flag as suspicious and add penalty to risk score
-    if "@" not in addr:
-        print(f'\nSuspicious email detected. Sender email address ({addr}) does not contain @')
-        riskScore+=penalty
-        return
-
-    #splits the email address into username and domain name, converts the domain name to lowercase and assign domain name to variable
-    domain = addr.split("@")[-1].lower() 
-    # print(WhitelistedDomains)
-    
-    #checks if domain name is in whitelist
-    if domain not in [d.lower() for d in WhitelistedDomains]:
-        print(f'\nSuspicious email detected. Sender email address ({addr}) is not whitelisted')
-        riskScore+=penalty
-        return
-    else:
-        #Does not add to risk score if sender email address is whitelisted
-        print(f'\nSender email address ({addr}) is whitelisted')
+from email import message_from_file
+import mailbox
+import DomainChecks as dc
+import ParseEmail as pe
     
 
 def CheckWords(mailList: list, wordDict: dict):
@@ -169,58 +88,7 @@ def SetSuspiciousWords(path: str):
     file.close()
     pass
 
-def LoadWhitelistedDomains(filename: str) -> list:
-    '''
-    Reads a text file containing whitelisted domains (one per line)
-    and stores them in the global WhitelistedDomains list.
 
-    Args:
-        filename: path to the text file
-
-    Returns:
-        The updated WhitelistedDomains list
-    '''
-    global WhitelistedDomains
-    WhitelistedDomains.clear()  # reset before loading
-
-    try:
-        with open(filename, "r") as f:
-            for line in f:
-                domain = line.strip().lower()
-                if domain and not domain.startswith("#"):  # skip blanks & comments
-                    WhitelistedDomains.append(domain)
-    except FileNotFoundError:
-        print(f"Whitelist file '{filename}' not found.")
-    except Exception as e:
-        print(f"Error reading whitelist file: {e}")
-
-    # print(WhitelistedDomains)
-    return WhitelistedDomains
-
-def PrintMultiPartMBox(mbox: mailbox.mboxMessage):
-    '''Print the parts of a multipart mbox file
-    '''
-    for part in mbox.get_payload():
-        print(part)
-        print("NEXT NEXT NEXT NEXT\n")
-
-def CleanText(msg: mailbox.mboxMessage):
-    '''Extract texts from an email message, handling both plain text and HTML parts,
-    then subsequently set it as the new payload of the email message.'''
-    plainText = htmlText = ""
-    #if msg.is_multipart():
-    for part in msg.get_payload():
-        if part.get_content_type() == "text/plain":
-            plainText = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="replace")
-        elif part.get_content_type() == "text/html":
-            html = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="replace")
-            htmlText = strip_html(html)
-    plainText += htmlText
-    cleanText = plainText.replace("\n", "").replace("\t", "")
-    print(cleanText)
-    msg.set_payload(cleanText)
-
-    pass
 if __name__=='__main__':
     #wordDict = {} #initialize empty dictionary
     #CheckWords(ParseMBox("../phishing_dataset/phishing0.mbox"), wordDict)
@@ -236,19 +104,24 @@ if __name__=='__main__':
     
     suspiciouswords = []                                #initialize empty list
     SetSuspiciousWords("sampleWordList.txt")            #set the suspicious words from the file
-    emailToScan = ParseSingleMbox("sampleEmail1.txt")   #parse the sampleEmail to readable status
     
+    emailToScan = pe.ParseSingleMbox("sampleEmail2.txt")   #parse the sampleEmail to readable status
     #PrintMultiPartMBox(emailToScan)
 
     #initialize whitelisted domains
-    WhitelistedDomains = []
-    LoadWhitelistedDomains("sampleWhitelistedDomains.txt")
+    WhitelistedDomains = dc.LoadWhitelistedDomains("sampleWhitelistedDomains.txt")
     
+    #cleans the text of the email & remove the html if neccesary
+    pe.CleanText(emailToScan)                             
+    #print(emailToScan)
 
+    #gets the senders email address from the "from" header in the email
+    sender = dc.GetSender(emailToScan)
+    #print(f'sender is:{sender}')
 
-    CleanText(emailToScan)                              #cleans the text of the email & remove the html if neccesary
-    CheckWhitelistedDomain(emailToScan)                 #checks if the sender's domain is whitelisted
-    # print(riskScore)
+    #checks if the sender's domain is whitelisted
+    dc.CheckWhitelistedDomain(sender,riskScore,WhitelistedDomains)                 
+    #print(riskScore)
     ScanEmail(emailToScan)                              #scan the email for suspicious words
     print(riskScore)
 
