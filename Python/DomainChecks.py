@@ -34,21 +34,21 @@ def LoadWhitelistedDomains(filename: str) -> list:
 def GetSender(email)->str:
     '''
     Extract Sender from the email.
-    - If whitelisted: return the same riskScore.
-    - If not whitelisted: add a penalty to the riskScore.
     
     Args:
         email: parsed email object (dict-like with "From" header).
+
+    Returns:
+        Email address of sender
     '''
     #gets sender information via the from header, this consists of sender display name + email address
     sender = email.get("From") or email.get("from")
 
-    #splits the from header into sender display name + email address, and assigns email address to addr
+    #splits the from header into sender display name [index 0] + email address [index 1], and assigns email address to addr
     addr = parseaddr(sender)[1]
-
     return addr
 
-def CheckWhitelistedDomain(email,riskScore,WhitelistedDomains):
+def CheckWhitelistedDomain(emailadd,riskScore,WhitelistedDomains):
     '''
     Check if the sender's email domain is in the whitelist.
     - If whitelisted: return the same riskScore.
@@ -58,45 +58,31 @@ def CheckWhitelistedDomain(email,riskScore,WhitelistedDomains):
         email: email address
         riskScore: The current risk Score
         WhitelistedDomains: List containing Whitelisted Domain names
-
-    Returns:
-        Updated RiskScore
     '''
 
-    #global riskScore
-    penalty = 20
-
-    #gets sender email address via the from header,
-    #sender = email.get("From")
-
-    #if no sender from header, flag as suspicious and add penalty to risk score
-    #if not sender:
-        #print(f'\nSuspicious email detected. No sender found')
-        #riskScore+=penalty
-        #return
-
-    #splits the from header into display name + email address
-    #dispName, addr = parseaddr(sender)
-    # print(f'Display Name:{dispName}, Domain: {addr}')
-
-    #if "@" not in addr, flag as suspicious and add penalty to risk score
-    if "@" not in email:
-        print(f'\nSuspicious email detected. Sender email address ({email}) does not contain @')
+    penalty = 20 #defining the penalty for failing the Domain Whitelist Check
+    
+    if not emailadd: #if no sender from header, flag as suspicious and add penalty to risk score
+        print(f'\nSuspicious email detected. No sender found')
         riskScore+=penalty
-        return
+        return riskScore
+    elif "@" not in emailadd: #if "@" not in addr, flag as suspicious and add penalty to risk score
+        print(f'\nSuspicious email detected. Sender email address ({emailadd}) does not contain @')
+        riskScore+=penalty
+        return riskScore
 
     #splits the email address into username and domain name, converts the domain name to lowercase and assign domain name to variable
-    domain = email.split("@")[-1].lower() 
-    # print(WhitelistedDomains)
+    domain = emailadd.split("@")[-1].lower() 
     
     #checks if domain name is in whitelist
     if domain not in [d.lower() for d in WhitelistedDomains]:
-        print(f'\nSuspicious email detected. Sender email address ({email}) is not whitelisted')
+        print(f'\nSuspicious email detected. Sender email address ({emailadd}) is not whitelisted')
         riskScore+=penalty
-        return
+        return riskScore
     else:
         #Does not add to risk score if sender email address is whitelisted
-        print(f'\nSender email address ({email}) is whitelisted')
+        print(f'\nSender email address ({emailadd}) is whitelisted')
+        return riskScore
 
 # edit distance check
 def levenshtein(source: str, target: str) -> int:
@@ -149,10 +135,36 @@ def levenshtein(source: str, target: str) -> int:
     # The last cell = distance between full source and full target
     return prev_distances[-1]
 
+def check_sender_levenshtein(sender:str,whitelist:list,riskScore:int):
+    '''
+    Check if the sender's email domain is visually similar to the domains in the whitelist.
+    - If visually similar: add a penalty to the riskScore
+    - If not visually similar: returns original riskScore.
+    
+    Args:
+        sender: email address
+        whitelist: List containing Whitelisted Domain names
+        riskScore: The current risk Score
+    '''
+    for w in whitelist:
+        #print(f'sender:{sender},whitelisted email:{w}')
+        dist = levenshtein(sender,w)
+        #print(f"levenshtein distance:{dist}")
+        if dist<2:
+            print(f"Sender email {sender} is similar to {w} as levenshtein distance is {dist}.")
+            riskScore+=30
+            return riskScore
+
+    print("Sender email passed edit distance check")
+    return riskScore
+
+
 #print(levenshtein("kitten", "sitting"))
 if __name__=='__main__':
-    test = {
-    "From": "John","phisher@bad.com"
-    "Subject": "Urgent: Reset your password"
-    }
-    print(GetSender(test))
+    # test = {
+    # "From": "John","phisher@bad.com"
+    # "Subject": "Urgent: Reset your password"
+    # }
+    # print(GetSender(test))
+
+    print(levenshtein("g0v.sg", "gov.sg"))
