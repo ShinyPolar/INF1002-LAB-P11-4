@@ -11,6 +11,9 @@ from email.utils import parseaddr
 from email import policy
 from email.parser import BytesParser
 
+#for handling multiple datasets in a directory
+import os
+
 import DomainChecks as dc #this is for whitelist check and edit distance check
 
 class HTMLStripper(HTMLParser):
@@ -292,6 +295,21 @@ if __name__=='__main__':
     suspiciouswords = []                                #initialize empty list
     SetSuspiciousWords("sampleWordList.txt")            #set the suspicious words from the file
     
+
+    """  #to loop our email detection checklist through all files in a directory
+    #WARNING!!!
+    #Output might be messy as we have yet to sort out the print statements
+
+    directory = "D:\JK\SIT ICT (IS)\Y1 Trimester 1\INF1002\Python Grp Proj\easy_ham\easy_ham"
+    
+    for f in os.listdir(directory):
+        filepath = os.path.join(directory, f)
+        print(filepath) 
+
+        <move rest of the code below here. replace variable file with filepath>
+        """
+
+
     file = "sampleEmail3.txt"
     filetype = detect_email_filetype(file) #checks if email is .mbox or .eml
     print(filetype)
