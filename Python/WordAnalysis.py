@@ -3,7 +3,7 @@ r'''
 
 
 '''
-
+import mailbox
 
 
 
@@ -29,10 +29,6 @@ def SortDict(wordDict: dict) -> dict:
     return sortedDict
 
 
-   
-
-
-
 def WriteToFile(wordDict: dict):
     '''Write the dictionary to a file
     '''
@@ -43,3 +39,21 @@ def WriteToFile(wordDict: dict):
         except:
             continue
     f.close()
+
+def ParseMBox(path: str):
+    '''Parse the mbox file and return a list of email messages
+    '''
+    mbox = mailbox.mbox(path)
+    phishing_mailList = [message for message in mbox] 
+    #turn it into a list cause idk what format mbox is in
+    return phishing_mailList
+
+
+if __name__=='__main__':
+    wordDict = {} #initialize empty dictionary
+    CheckWords(ParseMBox("../phishing_dataset/phishing0.mbox"), wordDict)
+    CheckWords(ParseMBox("../phishing_dataset/phishing1.mbox"), wordDict)
+    #CheckWords(ParseMBox("../phishing_dataset/phishing2.mbox"), wordDict)
+    wordDict = SortDict(wordDict)
+    WriteToFile(wordDict)
+    pass
