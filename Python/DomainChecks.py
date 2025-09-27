@@ -149,7 +149,7 @@ def check_sender_levenshtein(sender:str, whitelist:list, riskScore:int):
         distance = levenshtein(sender,w)
         
         #print(f"levenshtein distance:{distance}")
-        if distance >= 2:
+        if distance <= 2:
             print(f"Sender email {sender} is similar to {w} as levenshtein distance is {distance}.")
             riskScore += 30
             return riskScore
