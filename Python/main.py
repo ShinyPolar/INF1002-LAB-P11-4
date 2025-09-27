@@ -58,13 +58,16 @@ def CleanText(msg: mailbox.mboxMessage):
         elif content_type == "text/html":
             htmlText = strip_html(payload)
             urls.extend(ud.extract_urls_from_text(htmlText))
+    
     plainText += htmlText
-    cleanText = plainText.replace("\n", "").replace("\t", "")
-
+    cleanText = ' '.join(plainText.split())  # replace all whitespace sequences with single space
+    cleanText = cleanText.replace(". ", ".\n")  # put sentences on separate lines
     urls.extend(ud.extract_urls_from_text(cleanText))
     print(cleanText)
     msg.set_payload(cleanText)
     return cleanText, urls
+
+
 
 if __name__=='__main__':
 
