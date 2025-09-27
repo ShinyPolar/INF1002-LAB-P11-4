@@ -54,24 +54,39 @@ def ScanBody(email: mailbox.mboxMessage):
 
     global riskScoreBody
     print(f"\n\nIn email body:")
+    foundWords = []
+    foundWords100 = []
     
     for word in suspiciouswords:
         if word in email.get_payload():
+            foundWords.append(word)
             #potentially faster if using dictionary/list maybe?
 
-            print(f"Found suspicious word '{word}' in email.")
-            # say out the word found
-            
             riskScoreBody += 1
             #place holder until we decide how riskScoring will work
 
-            first_100_words = email.get_payload().split() 
+            first_100_words = email.get_payload().split()
             first_100_words = first_100_words[:100]
 
             for position in first_100_words:
                 if word == position:
-                    print(f"'{word}' is in the first 100 words of the email.\n")
+                    foundWords100.append(word)
                     riskScoreBody += 10
+
+    #Printing the results
+    print(f"Found suspicious words in email body:")
+    for i in range(len(foundWords)):
+        if i < len(foundWords)-1:
+            print(f"'{foundWords[i]}', ", end="")
+        else:
+            print(f"'{foundWords[i]}'", end="\n\n")
+    
+    print(f"Found in the first 100 words:")
+    for i in range(len(foundWords100)):
+        if i < len(foundWords100)-1:
+            print(f"'{foundWords100[i]}', ", end="")
+        else:
+            print(f"'{foundWords100[i]}'", end="\n\n")
     pass
 
 def SetSuspiciousWords(path: str):
