@@ -2,9 +2,6 @@ from email import message_from_file
 import mailbox
 from html.parser import HTMLParser
 from email.header import decode_header
-import re
-from urllib.parse import urlparse
-from bs4 import BeautifulSoup
 from email.utils import parseaddr
 import ScanEmail
 import mailbox
@@ -18,6 +15,7 @@ import os
 
 #for whitelist check and edit distance check
 import DomainChecks as dc
+import urlDetection as ud
 
 class HTMLStripper(HTMLParser):
     def __init__(self):
@@ -106,7 +104,7 @@ def CleanText(msg: mailbox.mboxMessage):
                 html = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="replace")
                 htmlText = strip_html(html)
 
-                urls.extend(extract_urls_from_text(html))
+                urls.extend(ud.extract_urls_from_text(html))
     else:
         content_type = msg.get_content_type()
         payload = msg.get_payload(decode=True).decode(msg.get_content_charset() or "utf-8", errors="replace")
@@ -114,90 +112,14 @@ def CleanText(msg: mailbox.mboxMessage):
             plainText = payload
         elif content_type == "text/html":
             htmlText = strip_html(payload)
-            urls.extend(extract_urls_from_text(htmlText))
+            urls.extend(ud.extract_urls_from_text(htmlText))
     plainText += htmlText
     cleanText = plainText.replace("\n", "").replace("\t", "")
 
-    urls.extend(extract_urls_from_text(cleanText))
+    urls.extend(ud.extract_urls_from_text(cleanText))
     print(cleanText)
     msg.set_payload(cleanText)
     return cleanText, urls
-
-def extract_urls_from_text(text: str):
-    # matches http://, https://, or www.something
-    url_pattern = r'(https?://[^\s]+|www\.[^\s]+)'
-    urls = re.findall(url_pattern, text)
-    return urls
-
-def get_html_content(email):
-    html_content = ""
-    if email.is_multipart():
-        for part in email.get_payload():
-            if part.get_content_type() == "text/html":
-                html_content = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="replace")
-    else:
-        if email.get_content_type() == "text/html":
-            html_content = email.get_payload(decode=True).decode(email.get_content_charset() or "utf-8", errors="replace")
-    return html_content
-
-def check_domain_mismatch(email):
-    global riskScore
-    html_content = get_html_content(email)
-    if not html_content:
-        return
-    soup = BeautifulSoup(html_content, "html.parser")
-    for a in soup.find_all('a', href=True):
-        actual_url = a['href'].strip()
-        claimed_text = a.get_text().strip()
-        # Parse claimed domain if it looks like a domain
-        claimed_domain = urlparse("http://" + claimed_text).netloc.lstrip("www.") if "." in claimed_text else actual_url
-        actual_domain = urlparse(actual_url).netloc.lstrip("www.")
-        if claimed_domain.lower() != actual_domain.lower():
-            riskScore += 15
-
-#get domain from URL
-def get_domain(urls):
-    domains = []
-    for url in urls:
-        netloc = urlparse(url).netloc
-        if netloc.startswith("www."):
-            netloc = netloc[4:]  # remove www.
-        domains.append(netloc.lower())
-    return domains
-
-# check if URL contains an IP address
-ipadd_pattern = r'^((([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:))|(([0-9a-fA-F]{1,4}:){6}(:[0-9a-fA-F]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-fA-F]{1,4}:){5}(((:[0-9a-fA-F]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-fA-F]{1,4}:){4}(((:[0-9a-fA-F]{1,4}){1,3})|((:[0-9a-fA-F]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:){3}(((:[0-9a-fA-F]{1,4}){1,4})|((:[0-9a-fA-F]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:){2}(((:[0-9a-fA-F]{1,4}){1,5})|((:[0-9a-fA-F]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:)(((:[0-9a-fA-F]{1,4}){1,6})|((:[0-9a-fA-F]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9a-fA-F]{1,4}){1,7})|((:[0-9a-fA-F]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?$'
-
-def url_contains_ip(urls):
-    global riskScore
-    domains = get_domain(urls)
-    for domain in domains:
-        if re.search(ipadd_pattern, domain):
-            riskScore += 40
-
-def lexical_features(urls): 
-    global riskScore 
-    domains = get_domain(urls)
-
-    for i in range(len(urls)):
-        url = urls[i].strip(' "\'<>')
-        domain = domains[i]
-
-        if len(url) > 75: 
-            riskScore += 2
-        if "@" in url: 
-            riskScore += 1
-        if "-" in domain: 
-            riskScore += 1
-        if domain.count('.') > 3: 
-            riskScore += 1
-        
-def scanURLs(urls):
-    if not urls:
-        return
-    url_contains_ip(urls)                               # IP address check
-    lexical_features(urls)                              # length > 75, "@", "-", "." checks
-    print("URLs scanned:", urls)
 
 if __name__=='__main__':
     #wordDict = {} #initialize empty dictionary
@@ -255,5 +177,5 @@ if __name__=='__main__':
         print(riskScore)
 
     riskScore += ScanEmail.ScanEmail(emailToScan, urls)                        #scan the email for suspicious words
-    check_domain_mismatch(emailToScan)    
-    print(riskScore)
+    riskScore += ud.scanURLs(urls, email_msg=emailToScan)                               #scan the URLs in the email for suspicious features
+    print(f'Total Risk Score: {riskScore}')
