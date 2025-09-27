@@ -1,24 +1,19 @@
-from email import message_from_file
 import mailbox
 from html.parser import HTMLParser
-from email.header import decode_header
-from email.utils import parseaddr
 #====INSTALL THE MODULES IN requirements.txt FIRST BEFORE RUNNING====
 #====Alternatively, you can run the following command in your terminal:====
 #pip install -r requirements.txt
 
 
-#for .eml files parsing
-from email import policy
-from email.parser import BytesParser
 
 #for handling multiple datasets in a directory
 import os
 
-#for whitelist check and edit distance check
+#for Module imports
 import DomainChecks as dc
 import urlDetection as ud
 import ScanEmail as se
+import ParseEmail as pe
 
 class HTMLStripper(HTMLParser):
     def __init__(self):
@@ -33,59 +28,6 @@ def strip_html(html):
     s = HTMLStripper()
     s.feed(html)
     return s.get_data()
-
-def detect_email_filetype(filepath: str) -> str:
-    """
-    Detect whether a file is in mbox or eml format.
-    Returns: "mbox", "eml", or "unknown"
-    """
-    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-        for line in f:
-            line = line.strip()
-            if line:  # skip blank lines
-                first_line = line
-                break
-        else:
-            return "unknown"  # empty file
-
-    if first_line.startswith("From "):  # mbox separator line
-        return "mbox"
-
-    eml_headers = ("Return-Path:", "From:", "To:", "Subject:", "Date:")
-    if any(first_line.startswith(h) for h in eml_headers):
-        return "eml"
-
-    return "unknown"
-
-def ParseMBox(path: str):
-    '''Parse the mbox file and return a list of email messages
-    '''
-    mbox = mailbox.mbox(path)
-    phishing_mailList = [message for message in mbox] 
-    #turn it into a list cause idk what format mbox is in
-    return phishing_mailList
-
-def ParseSingleMbox(path: str):
-    '''Parse a single mbox file and return the email message
-    '''
-    mbox = mailbox.mbox(path)
-    return mbox[0] #return the first email in the mbox file
-
-def ParseSingleEML(path: str):
-    """
-    Parse a single .eml file and return an EmailMessage object.
-    """
-    with open(path, "rb") as f:
-        msg = BytesParser(policy=policy.default).parse(f)
-    return msg
-
-def ParseEmail(path: str):
-    '''Parse a single email file and return the email message
-    '''
-    with open(path, "r") as f:
-        email = message_from_file(f)
-    return email
-    
 
 def PrintMultiPartMBox(mbox: mailbox.mboxMessage):
     '''Print the parts of a multipart mbox file
@@ -125,14 +67,6 @@ def CleanText(msg: mailbox.mboxMessage):
     return cleanText, urls
 
 if __name__=='__main__':
-    #wordDict = {} #initialize empty dictionary
-    #CheckWords(ParseMBox("../phishing_dataset/phishing0.mbox"), wordDict)
-    #CheckWords(ParseMBox("../phishing_dataset/phishing1.mbox"), wordDict)
-    #CheckWords(ParseMBox("../phishing_dataset/phishing2.mbox"), wordDict)
-    #wordDict = SortDict(wordDict)
-    #WriteToFile(wordDict)
-    #everything above is for word frequency analysis, not yet finished
-    #=========================================================================
 
 
     riskScore = 0
@@ -156,14 +90,13 @@ if __name__=='__main__':
 
     
     file = "sampleEmail3.txt"
-    filetype = detect_email_filetype(file) #checks if email is .mbox or .eml
+    filetype = pe.detect_email_filetype(file) #checks if email is .mbox or .eml
     print(filetype)
     if filetype == "mbox":
-        emailToScan = ParseSingleMbox(file)   #parse the sampleEmail to readable status for mbox files
+        emailToScan = pe.ParseSingleMbox(file)   #parse the sampleEmail to readable status for mbox files
         #PrintMultiPartMBox(emailToScan)
     elif filetype == "eml":
-        emailToScan = ParseSingleEML(file)    #parse the sampleEmail to readable status for eml files
-    
+        emailToScan = pe.ParseSingleEML(file)    #parse the sampleEmail to readable status for eml files
 
     #initialize whitelisted domains
     WhitelistedDomains = dc.LoadWhitelistedDomains("sampleWhitelistedDomains.txt")

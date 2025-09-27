@@ -7,7 +7,6 @@ and returns a risk score based on the findings
 
 import mailbox
 from email.header import decode_header
-import os
 
 
 
