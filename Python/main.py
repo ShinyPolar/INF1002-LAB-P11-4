@@ -3,8 +3,10 @@ import mailbox
 from html.parser import HTMLParser
 from email.header import decode_header
 from email.utils import parseaddr
-import ScanEmail
-import mailbox
+#====INSTALL THE MODULES IN requirements.txt FIRST BEFORE RUNNING====
+#====Alternatively, you can run the following command in your terminal:====
+#pip install -r requirements.txt
+
 
 #for .eml files parsing
 from email import policy
@@ -16,6 +18,7 @@ import os
 #for whitelist check and edit distance check
 import DomainChecks as dc
 import urlDetection as ud
+import ScanEmail as se
 
 class HTMLStripper(HTMLParser):
     def __init__(self):
@@ -135,7 +138,7 @@ if __name__=='__main__':
     riskScore = 0
     
     #suspiciouswords = []                                #initialize empty list
-    ScanEmail.SetSuspiciousWords("sampleWordList.txt")            #set the suspicious words from the file
+    se.SetSuspiciousWords("sampleWordList.txt")            #set the suspicious words from the file
     
 
     """  #to loop our email detection checklist through all files in a directory
@@ -176,6 +179,6 @@ if __name__=='__main__':
         riskScore = dc.check_sender_levenshtein(sender,WhitelistedDomains,riskScore) #edit distance check 
         print(riskScore)
 
-    riskScore += ScanEmail.ScanEmail(emailToScan, urls)                        #scan the email for suspicious words
+    riskScore += se.ScanEmail(emailToScan, urls)                        #scan the email for suspicious words
     riskScore += ud.scanURLs(urls, email_msg=emailToScan)                               #scan the URLs in the email for suspicious features
     print(f'Total Risk Score: {riskScore}')
