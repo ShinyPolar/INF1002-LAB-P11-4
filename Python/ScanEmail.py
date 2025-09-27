@@ -17,7 +17,9 @@ def ScanEmail(email: mailbox.mboxMessage, urls: list=[])->int:
     '''Scan the email for suspicious words if there are suspicious words found it would check if it is the first 100 words of the email body.
     Decode the subject line of the email.
     '''
-    
+    #Reinitialize the risk scores for subject and body
+    global riskScoreSubject, riskScoreBody
+    riskScoreSubject = riskScoreBody = 0
 
     ScanSubject(email)
     ScanBody(email)
@@ -32,7 +34,11 @@ def ScanSubject(email: mailbox.mboxMessage):
     #Decodes the subject line. If it does not need to be decoded it will still pass
     #risk score for subject and position based on the word doc
     subject = email['subject']
+
+    # Theres a problem here for dataset no.159 from hard_ham where TypeError: expected string or bytes-like object, got 'NoneType'
     subject = decode_header(subject)
+    
+    # Theres a problem here for dataset no.2132 from easy_ham where the encoding is unknown-8(or smthg liddat)
     subject = ''.join(part.decode(charset or 'utf-8') if isinstance(part, bytes) else part for part, charset in subject)
     subject = subject.lower()
     print(subject)
@@ -53,7 +59,6 @@ def ScanBody(email: mailbox.mboxMessage):
 
 
     global riskScoreBody
-    print(f"\n\nIn email body:")
     foundWords = []
     foundWords100 = []
     
@@ -73,21 +78,26 @@ def ScanBody(email: mailbox.mboxMessage):
                     foundWords100.append(word)
                     riskScoreBody += 10
 
+    
     #Printing the results
-    print(f"Found suspicious words in email body:")
+    print(f"\n\nIn email body:")
+    print(f"Found suspicious words:")
     for i in range(len(foundWords)):
         if i < len(foundWords)-1:
             print(f"'{foundWords[i]}', ", end="")
         else:
             print(f"'{foundWords[i]}'", end="\n\n")
-    
+
+    #If no suspicious words were found in the first 100 words, we can skip this section
+    if not foundWords100:
+        return
     print(f"Found in the first 100 words:")
     for i in range(len(foundWords100)):
         if i < len(foundWords100)-1:
             print(f"'{foundWords100[i]}', ", end="")
         else:
             print(f"'{foundWords100[i]}'", end="\n\n")
-    pass
+    return
 
 def SetSuspiciousWords(path: str):
     '''Set the list of suspicious words
