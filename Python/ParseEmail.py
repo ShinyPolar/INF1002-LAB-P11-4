@@ -28,7 +28,7 @@ def detect_email_filetype(filepath: str) -> str:
     if first_line.startswith("From "):  # mbox separator line
         return "mbox"
 
-    eml_headers = ("Return-Path:", "From:", "To:", "Subject:", "Date:")
+    eml_headers = ("Return-Path:", "From:", "To:", "Subject:", "Date:", "Forwarded:", "Replied:", "Received:", "Delivered-To:")
     if any(first_line.startswith(h) for h in eml_headers):
         return "eml"
 
