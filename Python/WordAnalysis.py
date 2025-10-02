@@ -4,7 +4,9 @@ r'''
 
 '''
 import mailbox
-
+from collections import Counter
+import numpy as np
+import ParseEmail as pe
 
 
 def CheckWords(mailList: list, wordDict: dict):
@@ -15,11 +17,14 @@ def CheckWords(mailList: list, wordDict: dict):
     '''
     for i in range(len(mailList)):
         #print(phishing_mailList[i]["subject"])
-        for word in str(mailList[i]["subject"]).split(" "):
+        subjectString = str(mailList[i]["subject"])
+        #subjectString = ' '.join(subjectString.split())
+        for word in subjectString.split():
             if word in wordDict:
                 wordDict[word] += 1
             else:
                 wordDict.update({word:1})
+
 
 
 def SortDict(wordDict: dict) -> dict:
@@ -29,12 +34,13 @@ def SortDict(wordDict: dict) -> dict:
     return sortedDict
 
 
-def WriteToFile(wordDict: dict):
+def WriteToFile(wordDict: dict, name):
     '''Write the dictionary to a file
     '''
-    f = open("wordCount.txt", "w")
+    f = open(name, "w")
     for key, value in wordDict.items():
         try: #there was an encoding error here once
+            key = key.strip()
             f.write(f"{key}: {value}\n")
         except:
             continue
@@ -46,14 +52,59 @@ def ParseMBox(path: str):
     mbox = mailbox.mbox(path)
     phishing_mailList = [message for message in mbox] 
     #turn it into a list cause idk what format mbox is in
+
+    print(len(phishing_mailList))
     return phishing_mailList
 
+#===========TEST STUFF===============
+
+# compute document frequencies (in how many emails the word appears)
+def doc_freq(docs):
+    df = Counter()
+    for d in docs:
+        df.update(set(d))  # set -> document freq
+    return df
+
+
+def CompileWordList(hamS, phishingS):
+    """Will add the 2 .txt together for a compiled listing
+
+    """
+
+    hamWords = ConvertFileToDictionary(hamS)
+    phishWords = ConvertFileToDictionary(phishingS)
+
+    compiledWords = hamWords.copy()
+    for word, count in phishWords.items():
+        if word in compiledWords:
+            compiledWords[word] += count
+        else:
+            compiledWords[word] = count
+
+    WriteToFile(compiledWords, "compiledWordList.txt")
+
+    pass
+
+def ConvertFileToDictionary(string)-> dict:
+    wordDict = {}
+    file = open(string, 'r')
+    for line in file:
+        word, count = line.split(": ")
+        word = word.strip()
+        count = int(count.strip())
+        wordDict[word] = count
+
+    file.close()
+    return wordDict
 
 if __name__=='__main__':
     wordDict = {} #initialize empty dictionary
-    CheckWords(ParseMBox("../phishing_dataset/phishing0.mbox"), wordDict)
-    CheckWords(ParseMBox("../phishing_dataset/phishing1.mbox"), wordDict)
-    #CheckWords(ParseMBox("../phishing_dataset/phishing2.mbox"), wordDict)
+    #CheckWords(ParseMBox("../phishing_dataset/phishing0.mbox"), wordDict)
+    #CheckWords(ParseMBox("../phishing_dataset/phishing1.mbox"), wordDict)
+    '''
+    CheckWords(ParseMBox("../phishing_dataset/phishing3.mbox"), wordDict)
     wordDict = SortDict(wordDict)
-    WriteToFile(wordDict)
+    WriteToFile(wordDict, "wordCount.txt")
+    '''
+    CompileWordList("wordCountEasyHam.txt", "wordCount.txt")
     pass

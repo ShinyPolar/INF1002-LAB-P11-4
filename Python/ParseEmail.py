@@ -10,6 +10,21 @@ from email import message_from_file
 #for .eml files parsing
 from email import policy
 from email.parser import BytesParser
+from html.parser import HTMLParser
+
+class HTMLStripper(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.data = []
+    def handle_data(self, d):
+        self.data.append(d)
+    def get_data(self):
+        return ''.join(self.data)
+
+def strip_html(html):
+    s = HTMLStripper()
+    s.feed(html)
+    return s.get_data()
 
 def detect_email_filetype(filepath: str) -> str:
     """
@@ -62,3 +77,37 @@ def ParseEmail(path: str):
     with open(path, "r") as f:
         email = message_from_file(f)
     return email
+
+
+
+
+def SetBodyCleanText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
+    '''Extract texts from an email message, handling both plain text and HTML parts,
+    then subsequently set it as the new payload of the email message.'''
+    plainText = htmlText = ""
+    #urls = []
+    if msg.is_multipart():
+        for part in msg.get_payload():
+            if part.get_content_type() == "text/plain":
+                plainText = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="replace")
+            elif part.get_content_type() == "text/html":
+                html = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="replace")
+                htmlText = strip_html(html)
+
+                #urls.extend(ud.extract_urls_from_text(html))
+    else:
+        content_type = msg.get_content_type()
+        payload = msg.get_payload(decode=True).decode(msg.get_content_charset() or "utf-8", errors="replace")
+        if content_type == "text/plain":
+            plainText = payload
+        elif content_type == "text/html":
+            htmlText = strip_html(payload)
+            #urls.extend(ud.extract_urls_from_text(htmlText))
+    
+    plainText += htmlText
+    cleanText = ' '.join(plainText.split())  # replace all whitespace sequences with single space
+    cleanText = cleanText.replace(". ", ".\n")  # put sentences on separate lines
+    #urls.extend(ud.extract_urls_from_text(cleanText))
+    #print(cleanText)
+    msg.set_payload(cleanText)
+    return msg
