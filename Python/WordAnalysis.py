@@ -115,24 +115,19 @@ def WriteToFile(wordDict: dict, name):
             continue
     f.close()
 
-def ParseMBox(path: str):
-    '''Parse the mbox file and return a list of email messages
-    '''
-    mbox = mailbox.mbox(path)
-    phishing_mailList = [message for message in mbox] 
-    #turn it into a list cause idk what format mbox is in
-
-    print(len(phishing_mailList))
-    return phishing_mailList
 
 #===========TEST STUFF===============
 
+#STEP 1: COUNT HOW MANY TIMES WORD APPEAR IN EMAIL
+
 # compute document frequencies (in how many emails the word appears)
-def doc_freq(docs):
-    df = Counter()
-    for d in docs:
-        df.update(set(d))  # set -> document freq
-    return df
+def email_freq(emailList):
+    emailFrequency = Counter()
+    for email in emailList:
+        wordList = email.get_payload().split(" ")
+        emailFrequency.update(set(wordList))  # set -> document freq
+    return emailFrequency
+
 
 
 def CompileWordList(hamS, phishingS):
@@ -168,19 +163,20 @@ def ConvertFileToDictionary(string)-> dict:
 
 if __name__=='__main__':
     wordDict = {} #initialize empty dictionary
-    #CheckWords(ParseMBox("../phishing_dataset/phishing0.mbox"), wordDict)
-    #CheckWords(ParseMBox("../phishing_dataset/phishing1.mbox"), wordDict)
-    #'''
-    CheckWords(ParseMBox("../phishing_dataset/phishing3.mbox"), wordDict)
-    wordDict = SortDict(wordDict)
-    WriteToFile(wordDict, "wordCount.txt")
-    #'''
+    mboxDataset = pe.ParseMBox("../phishing_dataset/phishing3.mbox")
+    CheckWords(mboxDataset, wordDict)
+    phishing_email_freq = email_freq(mboxDataset)
+    # wordDict = SortDict(wordDict)
+    # WriteToFile(wordDict, "wordCount.txt")
+    #print(email_freq(mboxDataset))
+    
     #CompileWordList("wordCountEasyHam.txt", "wordCount.txt")
-
+    #mbox = pe.ParseSingleMbox("sampleEmail1.txt")
+    #text = pe.SetBodyCleanText(mbox)
     '''
     for f in os.listdir("../INF1002-LAB-P11-4/easy_ham/easy_ham/"):
         f = str(f)
-        CheckWordsEML(pe.ParseSingleEML(os.path.join("../INF1002-LAB-P11-4/easy_ham/easy_ham/", f)), wordDict)
+        CheckWordsEML(pe.ParseSingleEML(oprint()s.path.join("../INF1002-LAB-P11-4/easy_ham/easy_ham/", f)), wordDict)
     
     wordDict = SortDict(wordDict)
     WriteToFile(wordDict, "wordCountEasyHam.txt") 
