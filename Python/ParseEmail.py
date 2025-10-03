@@ -11,6 +11,7 @@ from email import message_from_file
 from email import policy
 from email.parser import BytesParser
 from html.parser import HTMLParser
+from email.message import EmailMessage
 
 class HTMLStripper(HTMLParser):
     def __init__(self):
@@ -71,13 +72,6 @@ def ParseSingleEML(path: str):
         msg = BytesParser(policy=policy.default).parse(f)
     return msg
 
-def ParseEmail(path: str):
-    '''Parse a single email file and return the email message
-    '''
-    with open(path, "r") as f:
-        email = message_from_file(f)
-    return email
-
 def TryDecode(decodeText:str, charset):
     returnString = ""
     try:
@@ -87,7 +81,7 @@ def TryDecode(decodeText:str, charset):
     return returnString
 
 
-def SetBodyCleanText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
+def SetBodyCleanText(msg: EmailMessage):
     '''Extract texts from an email message, handling both plain text and HTML parts,
     then subsequently set it as the new payload of the email message.'''
     plainText = htmlText = ""
