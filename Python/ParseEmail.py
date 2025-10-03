@@ -78,7 +78,13 @@ def ParseEmail(path: str):
         email = message_from_file(f)
     return email
 
-
+def TryDecode(decodeText:str, charset):
+    returnString = ""
+    try:
+        returnString = decodeText.decode(charset or "utf-8", errors="replace")
+    except:
+        returnString = decodeText.decode("utf-8", errors="replace")
+    return returnString
 
 
 def SetBodyCleanText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
@@ -86,23 +92,16 @@ def SetBodyCleanText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
     then subsequently set it as the new payload of the email message.'''
     plainText = htmlText = ""
     #urls = []
-    if msg.is_multipart():
-        for part in msg.get_payload():
-            if part.get_content_type() == "text/plain":
-                plainText = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="replace")
-            elif part.get_content_type() == "text/html":
-                html = part.get_payload(decode=True).decode(part.get_content_charset() or "utf-8", errors="replace")
-                htmlText = strip_html(html)
+    for part in msg.walk():
+        content_type = part.get_content_type()
+        content_charset = part.get_content_charset()
 
-                #urls.extend(ud.extract_urls_from_text(html))
-    else:
-        content_type = msg.get_content_type()
-        payload = msg.get_payload(decode=True).decode(msg.get_content_charset() or "utf-8", errors="replace")
         if content_type == "text/plain":
-            plainText = payload
-        elif content_type == "text/html":
-            htmlText = strip_html(payload)
-            #urls.extend(ud.extract_urls_from_text(htmlText))
+            plainText = TryDecode(part.get_payload(decode=True), content_charset)
+        if content_type == "text/html":
+            htmlText = TryDecode(part.get_payload(decode=True), content_charset)
+            htmlText = strip_html(htmlText)
+            #urls.extend(ud.extract_urls_from_text(html))
     
     plainText += htmlText
     cleanText = ' '.join(plainText.split())  # replace all whitespace sequences with single space
@@ -110,4 +109,4 @@ def SetBodyCleanText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
     #urls.extend(ud.extract_urls_from_text(cleanText))
     #print(cleanText)
     msg.set_payload(cleanText)
-    return msg
+    return cleanText

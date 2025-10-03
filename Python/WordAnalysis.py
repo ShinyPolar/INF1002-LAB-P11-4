@@ -10,6 +10,7 @@ import ParseEmail as pe
 import os
 import re
 from email.message import EmailMessage
+from email.header import decode_header
 
 
 def CheckWords(mailList: list, wordDict: dict):
@@ -18,34 +19,29 @@ def CheckWords(mailList: list, wordDict: dict):
     If the word is already in the dictionary, it increments the count by 1\n
     If the word is not in the dictionary, it adds the word to the dictionary with a count of 1
     '''
-    '''for i in range(len(mailList)):
-        #print(phishing_mailList[i]["subject"])
-        subjectString = str(mailList[i]["subject"])
-        #subjectString = ' '.join(subjectString.split())
-        for word in subjectString.split():
+    for email in mailList:
+        subjectString = str(email["subject"])
+        #subjectString = decode_header(subjectString)
+        if subjectString is None:
+            continue
+        wordDict = CheckString(subjectString, wordDict)
+    
+    '''
+    Check the words in the body of the email in the list
+    If the word is already in the dictionary, it increments the count by 1
+    If the word is not in the dictionary, it adds the word to the dictionary with a count of 1
+    '''
+    for email in mailList:
+        bodyString = pe.SetBodyCleanText(email)
+        wordDict = CheckString(bodyString, wordDict)
+
+def CheckString(string: str, wordDict: dict):
+    for word in string.split():
             if word in wordDict:
                 wordDict[word] += 1
             else:
-                wordDict.update({word:1})'''
-    
-    '''
-    Check the words in the body of the email in the list\n
-    If the word is already in the dictionary, it increments the count by 1\n
-    If the word is not in the dictionary, it adds the word to the dictionary with a count of 1
-    '''
-    for message in mailList:
-        payload = message.get_payload(decode=True)
-        if payload:
-            try:
-                body = payload.decode(errors="ignore")
-            except:
-                body = str(payload)
-            for word in body.split():
-                word = word.strip().lower()
-                if word in wordDict:
-                    wordDict[word] += 1
-                else:
-                    wordDict[word] = 1
+                wordDict[word] = 1
+    return wordDict
 
 
 def ParseEML(mail: EmailMessage):  
@@ -174,12 +170,12 @@ if __name__=='__main__':
     wordDict = {} #initialize empty dictionary
     #CheckWords(ParseMBox("../phishing_dataset/phishing0.mbox"), wordDict)
     #CheckWords(ParseMBox("../phishing_dataset/phishing1.mbox"), wordDict)
-    '''
+    #'''
     CheckWords(ParseMBox("../phishing_dataset/phishing3.mbox"), wordDict)
     wordDict = SortDict(wordDict)
     WriteToFile(wordDict, "wordCount.txt")
-    '''
-    CompileWordList("wordCountEasyHam.txt", "wordCount.txt")
+    #'''
+    #CompileWordList("wordCountEasyHam.txt", "wordCount.txt")
 
     '''
     for f in os.listdir("../INF1002-LAB-P11-4/easy_ham/easy_ham/"):
