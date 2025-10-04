@@ -11,7 +11,6 @@ from email import message_from_file
 from email import policy
 from email.parser import BytesParser
 from html.parser import HTMLParser
-from email.message import EmailMessage
 
 class HTMLStripper(HTMLParser):
     def __init__(self):
@@ -54,8 +53,13 @@ def ParseMBox(path: str):
     '''Parse the mbox file and return a list of email messages
     '''
     mbox = mailbox.mbox(path)
-    phishing_mailList = [message for message in mbox] 
-    #turn it into a list cause idk what format mbox is in
+    phishing_mailList = [] 
+    for message in mbox:
+        #Cleans payload text beforehand 
+        SetBodyCleanText(message)
+        phishing_mailList.append(message)
+
+    #Returns the mbox in a list of mbox.Message
     return phishing_mailList
 
 def ParseSingleMbox(path: str):
@@ -72,6 +76,13 @@ def ParseSingleEML(path: str):
         msg = BytesParser(policy=policy.default).parse(f)
     return msg
 
+def ParseEmail(path: str):
+    '''Parse a single email file and return the email message
+    '''
+    with open(path, "r") as f:
+        email = message_from_file(f)
+    return email
+
 def TryDecode(decodeText:str, charset):
     returnString = ""
     try:
@@ -81,7 +92,7 @@ def TryDecode(decodeText:str, charset):
     return returnString
 
 
-def SetBodyCleanText(msg: EmailMessage):
+def SetBodyCleanText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
     '''Extract texts from an email message, handling both plain text and HTML parts,
     then subsequently set it as the new payload of the email message.'''
     plainText = htmlText = ""
@@ -99,7 +110,7 @@ def SetBodyCleanText(msg: EmailMessage):
     
     plainText += htmlText
     cleanText = ' '.join(plainText.split())  # replace all whitespace sequences with single space
-    cleanText = cleanText.replace(". ", ".\n")  # put sentences on separate lines
+    #cleanText = cleanText.replace(". ", ".\n")  # put sentences on separate lines
     #urls.extend(ud.extract_urls_from_text(cleanText))
     #print(cleanText)
     msg.set_payload(cleanText)
