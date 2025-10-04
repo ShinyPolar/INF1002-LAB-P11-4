@@ -11,6 +11,7 @@ import os
 import re
 from email.message import EmailMessage
 from email.header import decode_header
+import math
 
 
 def CheckWords(mailList: list, wordDict: dict):
@@ -31,9 +32,13 @@ def CheckWords(mailList: list, wordDict: dict):
     If the word is already in the dictionary, it increments the count by 1
     If the word is not in the dictionary, it adds the word to the dictionary with a count of 1
     '''
+    count = 0
     for email in mailList:
+        count += 1
         bodyString = pe.SetBodyCleanText(email)
         wordDict = CheckString(bodyString, wordDict)
+
+    return count
 
 def CheckString(string: str, wordDict: dict):
     for word in string.split():
@@ -163,9 +168,12 @@ def ConvertFileToDictionary(string)-> dict:
 
 if __name__=='__main__':
     wordDict = {} #initialize empty dictionary
-    mboxDataset = pe.ParseMBox("../phishing_dataset/phishing3.mbox")
-    CheckWords(mboxDataset, wordDict)
-    phishing_email_freq = email_freq(mboxDataset)
+    wordDict = ConvertFileToDictionary("compiledWordList.txt")
+
+    phishingList = pe.ParseMBox("../phishing_dataset/phishing3.mbox")
+    totalPhishingEmail = 0
+    totalPhishingEmail = CheckWords(phishingList, wordDict)
+
     # wordDict = SortDict(wordDict)
     # WriteToFile(wordDict, "wordCount.txt")
     #print(email_freq(mboxDataset))
@@ -173,15 +181,51 @@ if __name__=='__main__':
     #CompileWordList("wordCountEasyHam.txt", "wordCount.txt")
     #mbox = pe.ParseSingleMbox("sampleEmail1.txt")
     #text = pe.SetBodyCleanText(mbox)
-    '''
-    for f in os.listdir("../INF1002-LAB-P11-4/easy_ham/easy_ham/"):
-        f = str(f)
-        CheckWordsEML(pe.ParseSingleEML(oprint()s.path.join("../INF1002-LAB-P11-4/easy_ham/easy_ham/", f)), wordDict)
+
+
+    hamList = []
+    directory = "..\easy_ham\easy_ham"
+    totalHamEmail = 0
+    for f in os.listdir(directory):
+        file = os.path.join(directory, f)
+
+        emailToScan = pe.ParseSingleEML(file)    #parse the sampleEmail to readable status for eml files
+        pe.SetBodyCleanText(emailToScan)
+        hamList.append(emailToScan)
+        totalHamEmail += 1
+
+    phishingWordFreq = email_freq(phishingList)
+    hamWordFreq = email_freq(hamList)
+
+    print("doing rate calculations now uwu")
+    #Calculate email rates
+    phishingRate = {}
+    hamRate = {}
+    for word in wordDict:
+        phishingRate[word] = (phishingWordFreq[word] + 1) / (totalPhishingEmail + 2)
+        hamRate[word] = (hamWordFreq[word] + 1) / (totalHamEmail + 2)
+
+
+    #print("bank:", phishingRate["bank"], hamRate["bank"], phishingRate["bank"] / hamRate["bank"])
+    # print("total ham email:", totalHamEmail)
+    # print("total phishing email:", totalPhishingEmail)
+    score = {}
+    for word in wordDict:
+        weight = float(0.0)
+        weight = phishingRate[word] / hamRate[word]
+        score[word] = round(math.log10(weight),3)
+    WriteToFile(score, "wordWeightage.txt")
+
+
+
+    # for f in os.listdir("../INF1002-LAB-P11-4/easy_ham/easy_ham/"):
+    #     f = str(f)
+    #     CheckWordsEML(pe.ParseSingleEML(oprint()s.path.join("../INF1002-LAB-P11-4/easy_ham/easy_ham/", f)), wordDict)
     
-    wordDict = SortDict(wordDict)
-    WriteToFile(wordDict, "wordCountEasyHam.txt") 
+    # wordDict = SortDict(wordDict)
+    # WriteToFile(wordDict, "wordCountEasyHam.txt") 
     
-    '''
+    
 
 #    print(type(ParseMBox("../INF1002-LAB-P11-4/phishing_dataset/phishing0.mbox")))
 #    email = list(pe.ParseSingleEML("../INF1002-LAB-P11-4/easy_ham/easy_ham/0001.ea7e79d3153e7469e7a9c3e0af6a357e"))
