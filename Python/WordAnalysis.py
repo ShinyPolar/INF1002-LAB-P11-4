@@ -78,18 +78,6 @@ def CheckWordsEML(mail: EmailMessage, wordDict: dict):
     checks the words in the eml body and subject\n
     if in the dictionary, it would increase the count\n
     If its not in the body, it then adds the word into the dictionary with a count of 1
-    '''
-    bodyMessage = ParseEML(mail) # extracts the date, from, message-ID and body of email
-    if bodyMessage:
-        body = bodyMessage if isinstance(bodyMessage, str) else str(bodyMessage) # checks if the mail is a string if not will change into a string variable
-        for word in body.split():
-            word =re.sub(r"(^\W+|\W+$)", "", word).lower() # removes any special characters after and before the word
-            if word in wordDict:
-                wordDict[word] += 1
-            else:
-                wordDict[word] = 1
-    
- 
     subject = mail['subject'] 
     for i in subject.split():
         clean = re.sub(r"(^\W+|\W+$)", "", i).lower()  # removes any special characters after and before the word
@@ -99,7 +87,17 @@ def CheckWordsEML(mail: EmailMessage, wordDict: dict):
 
             else:
                 wordDict[clean] = 1
-    
+    '''
+    bodyMessage = mail # extracts the date, from, message-ID and body of email
+    if bodyMessage:
+        body = bodyMessage if isinstance(bodyMessage, str) else str(bodyMessage) # checks if the mail is a string if not will change into a string variable
+        for word in body.split():
+            word =re.sub(r"(^\W+|\W+$)", "", word).lower() # removes any special characters after and before the word
+            if word in wordDict:
+                wordDict[word] += 1
+            else:
+                wordDict[word] = 1
+      
 
 def SortDict(wordDict: dict) -> dict:
     '''Sorts and returns the dictionary by amount in descending order
@@ -218,12 +216,16 @@ if __name__=='__main__':
 
 
 
-    # for f in os.listdir("../INF1002-LAB-P11-4/easy_ham/easy_ham/"):
+    # dir = "../INF1002-LAB-P11-4/hard_ham/hard_ham/"
+    # for f in os.listdir(dir):
     #     f = str(f)
-    #     CheckWordsEML(pe.ParseSingleEML(oprint()s.path.join("../INF1002-LAB-P11-4/easy_ham/easy_ham/", f)), wordDict)
+    #     path = os.path.join(dir, f)
+    #     eml = pe.ParseSingleEML(path)
+    #     clean = pe.SetBodyCleanText(eml)
+    #     CheckWordsEML(clean, wordDict)
     
     # wordDict = SortDict(wordDict)
-    # WriteToFile(wordDict, "wordCountEasyHam.txt") 
+    # WriteToFile(wordDict, "wordCountHardHam.txt") 
     
     
 
