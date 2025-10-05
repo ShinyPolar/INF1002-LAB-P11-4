@@ -4,90 +4,103 @@ Uses Log Odds smoothign for its weight.
 
 
 '''
-import mailbox
 from collections import Counter
 #import numpy as np
 import ParseEmail as pe
 import os
 import re
 from email.message import EmailMessage
-from email.header import decode_header
 import math
 
 
-def CheckWords(mailList: list, wordDict: dict):
+def CheckWords(mailList: list, wordList: list):
+    r'''
+    Check the words in the subject and body of all emails in the list
+    Adds all unique words that are not stopwords, 
+    and are valid with no special characters to the list
     '''
-    Check the words in the subject of the email in the list\n
-    If the word is already in the dictionary, it increments the count by 1\n
-    If the word is not in the dictionary, it adds the word to the dictionary with a count of 1
-    '''
+
+    #Checks the words in subject
     for email in mailList:
         subjectString = str(email["subject"])
-        #subjectString = decode_header(subjectString)
         if subjectString is None:
             continue
-        wordDict = CheckString(subjectString, wordDict)
+        wordList = CheckString(subjectString, wordList)
     
-    '''
-    Check the words in the body of the email in the list
-    If the word is already in the dictionary, it increments the count by 1
-    If the word is not in the dictionary, it adds the word to the dictionary with a count of 1
-    '''
+    #Checks the words in body
     for email in mailList:
         bodyString = email.get_payload()
-        wordDict = CheckString(bodyString, wordDict)
+        wordList = CheckString(bodyString, wordList)
+
+    #Checks for stopwords, and removes them if in list
+    CheckStopwords(wordList, "Lists/stopWords.txt")
 
 
-def CheckWordsEML(mail: EmailMessage, wordDict: dict):
-    '''
-    checks the words in the eml body and subject\n
-    if in the dictionary, it would increase the count\n
-    If its not in the body, it then adds the word into the dictionary with a count of 1
-    subject = mail['subject'] 
-    for i in subject.split():
-        clean = re.sub(r"(^\W+|\W+$)", "", i).lower()  # removes any special characters after and before the word
-        if clean:
-            if clean in wordDict:
-                wordDict[clean] += 1
+def CheckWordsEML(email: EmailMessage, wordList: list):
+    r'''
+    Checks the words in the eml body
+    Adds all unique words that are not stopwords, 
+    and are valid with no special characters to the list'''
+    # subjectString = email['subject'] 
+    # CheckString(subjectString, wordList)
 
-            else:
-                wordDict[clean] = 1
-    '''
-    bodyMessage = mail # extracts the date, from, message-ID and body of email
+    # Checks the words in body
+    bodyMessage = email 
     if bodyMessage:
         body = bodyMessage if isinstance(bodyMessage, str) else str(bodyMessage) # checks if the mail is a string if not will change into a string variable
-        CheckString(body, wordDict)
+        CheckString(body, wordList)
 
 
-def CheckString(string: str, wordDict: dict):
-    
+def CheckString(string: str, wordList: list)-> list:
+    r"""
+    Checks the words in the string against the wordList
+    Adds all unique words found into the wordList
+    """
     for word in string.split():
+            # Make sure its an actual word
             if not IsValidWord(word):
                 continue
-            if not word.isalnum():
+            if not word.isalpha():
                 continue
-            if word in wordDict:
-                wordDict[word] += 1
+            
+            # Make sure its an unique word
+            if word in wordList:
+                continue
             else:
-                wordDict[word] = 1
-    return wordDict
+                wordList.append(word)
+
+    return wordList
 
 
-def WriteToFile(wordDict: dict, name):
-    '''Write the dictionary to a file
+def WriteToFile(words, path:str):
+    '''Write the dictionary/list to a file
     '''
-    f = open(name, "w")
-    for key, value in wordDict.items():
-        try: #there was an encoding error here once
-            key = key.strip()
-            f.write(f"{key}: {value}\n")
-        except:
-            continue
+    f = open(path, "w")
+
+    if type(words) == list:
+        for word in words:
+            try: #catch any words that has weird encoding.
+                word = word.strip()
+                f.write(f"{word}\n")
+            except:
+                print("Word cannot be written out.")
+
+    elif type(words) == dict:
+        for key, value in words.items():
+            try: #catch any words that has weird encoding.
+                key = key.strip()
+                f.write(f"{key}: {value}\n")
+            except:
+                print("Word cannot be written out.")
+
+    else:
+        print("Cannot write into file as format is not dict or list.")
     f.close()
 
-#  document frequencies (in how many emails the word appears)
-def EmailFreq(emailList):
-    
+def EmailFreq(emailList: list)-> Counter:
+    r"""
+    Computes email frequency of the words used.
+    """
 
     emailFrequency = Counter()
     for email in emailList:
@@ -95,23 +108,103 @@ def EmailFreq(emailList):
         emailFrequency.update(set(wordList))  # set -> document freq
     return emailFrequency
 
+
+
+def CompileWordList(list1: list, list2: list):
+    r"""Will add the 2 lists together for a compiled listing.
+    Write the file out as compiledWordList.txt
+    """
+    wordList1 = ConvertFileToList(list1)
+    wordList2 = ConvertFileToList(list2)
+
+    compiledWords = wordList1.copy()
+    for word in wordList2:
+        if word in compiledWords:
+            continue
+        else:
+            compiledWords.append(word)
+
+    WriteToFile(compiledWords, "Lists\compiledWordList.txt")
+    return
+
+def CheckStopwords(wordList, path):
+    r"""
+    Checks and remove the words in the wordList against a list of Stopwords.
+    Stopwords are words commonly used in the english language.
+    eg. the, an, a, is, are, you, i, etc.
+    """
+    f = open(path, "r")
+    stopwordList = [line.strip() for line in f.readlines()]
+    f.close()
+
+    wordListCopy = wordList.copy()
+    for word in wordListCopy:
+        if word.lower() in stopwordList:
+            wordList.remove(word)
+
+    return wordList
+
+
+def IsValidWord(word: str)->bool:
+    r"""
+    Checks the word provided to see if it can be classified as a valid word.
+    Returns true if it is.
+    """
+    # remove very short codes (length <= 2)
+    if len(word) <= 2:
+        return False
+    
+    # removes tokens
+    if word.isupper() and len(word) <= 4:
+        return False
+
+    return True
+
+def ConvertFileToList(path: str)-> list:
+    r"""
+    Converts the file provided at the path to a list.
+    """
+
+    wordList = []
+    file = open(path, 'r')
+    for line in file:
+        # removes the character \n at the end of the line
+        word = line.strip()
+        wordList.append(word)
+    file.close()
+    return wordList
+
+def CheckEMLEmail(path: str, wordList: list):
+    r"""
+    Checks the directory of eml emails provided for unique words.
+    Returns the wordList after checking the EML emails.
+    """
+    for f in os.listdir(path):
+        f = str(f)
+        newpath = os.path.join(path, f)
+        eml = pe.ParseSingleEML(newpath)
+        clean = pe.SetBodyCleanText(eml)
+        CheckWordsEML(clean, wordList)
+
+    return wordList
+
+
 def LogOddsSmoothing():
-    '''Calculate
+    r'''
+    Calculates the weightage of all the words that appears in the emails
+    using Log Odds Smoothing. Then writes it out as a file "wordWeightage.txt"
     '''
 
+    # Get list of words from all emails
+    wordList = []
+    wordList = ConvertFileToList("Lists\compiledWordList.txt")
 
-    wordDict = {} #initialize empty dictionary
-    wordDict = ConvertFileToDictionary("compiledWordList.txt")
-    wordDict = CheckStopwords(wordDict, "stopWords.txt")
-    wordDict = {w: c for w, c in wordDict.items() if IsValidWord(w)}
-
+    # Get list of phishing emails
     phishingList = pe.ParseMBox("../phishing_dataset/phishing3.mbox")
     totalPhishingEmail = 0
     totalPhishingEmail = len(phishingList)
 
-    for email in phishingList:
-        pe.SetBodyCleanText(email)
-
+    # Get list of ham emails
     hamList = []
     directory = "..\easy_ham\easy_ham"
     totalHamEmail = 0
@@ -123,127 +216,49 @@ def LogOddsSmoothing():
         hamList.append(emailToScan)
         totalHamEmail += 1
 
+    # Calculates phishing and ham frequency
     phishingWordFreq = EmailFreq(phishingList)
     hamWordFreq = EmailFreq(hamList)
 
-    #Calculate email rates
+    #Calculate how likely the word is in a phishing rather than ham
     phishingRate = {}
     hamRate = {}
     score = {}
-    for word in wordDict:
+    for word in wordList:
         phishingRate[word] = (phishingWordFreq[word] + 1) / (totalPhishingEmail + 2)
         hamRate[word] = (hamWordFreq[word] + 1) / (totalHamEmail + 2)
         weight = phishingRate[word] / hamRate[word]
         finalWeight = round(math.log10(weight) , 2)
 
-        #remove words that have weightage to ham, not needed in this case
+        # Remove words that have weightage to ham, not needed in this case
         if finalWeight < 0:
             continue
         score[word] = finalWeight
-
-
-    
-    WriteToFile(score, "wordWeightage.txt")
+        
+    WriteToFile(score, "Lists\wordWeightage.txt")
     return
-
-def CompileWordList(hamS, phishingS):
-    """Will add the 2 .txt together for a compiled listing
-
-    """
-    hamWords = ConvertFileToDictionary(hamS)
-    phishWords = ConvertFileToDictionary(phishingS)
-
-    compiledWords = hamWords.copy()
-    for word, count in phishWords.items():
-        if word in compiledWords:
-            compiledWords[word] += count
-        else:
-            compiledWords[word] = count
-
-    WriteToFile(compiledWords, "compiledWordList.txt")
-
-    pass
-
-def CheckStopwords(wordDict, path):
-
-
-    f = open(path, "r")
-    stopwordList = [line.strip() for line in f.readlines()]
-    f.close()
-
-    wordDictCopy = wordDict.copy()
-    for word in wordDictCopy:
-        if word in stopwordList:
-            del wordDict[word]
-
-    return wordDict
-
-
-def IsValidWord(word)->bool:
-    """Checks if it is a valid word to be compared against
-    
-    """
-    # remove hex-like strings: 0x123abc
-    if re.match(r"^0x[0-9A-Fa-f]+$", word):
-        return False
-    
-    # remove words with digits
-    if any(ch.isdigit() for ch in word):
-        return False
-    
-    # remove very short codes (length <= 2)
-    if len(word) <= 2:
-        return False
-    
-    # removes tokens
-    if word.isupper() and len(word) <= 4:
-        return False
-
-    return True
-
-def ConvertFileToDictionary(string)-> dict:
-    wordDict = {}
-    file = open(string, 'r')
-    for line in file:
-        word, count = line.split(": ")
-        word = word.strip()
-        count = int(count.strip())
-        wordDict[word] = count
-
-    file.close()
-    return wordDict
-
-def GetEMLEmail(path, wordDict):
-    for f in os.listdir(path):
-        f = str(f)
-        newpath = os.path.join(path, f)
-        eml = pe.ParseSingleEML(newpath)
-        clean = pe.SetBodyCleanText(eml)
-        CheckWordsEML(clean, wordDict)
-
-    return wordDict
 
 
 if __name__=='__main__':
     
-    wordDict = {}
+    #wordList = []
     # ==========Compiling words from PhishingEmails===========
     # phishingList = pe.ParseMBox("../phishing_dataset/phishing3.mbox")
-    # CheckWords(phishingList, wordDict)
-    # WriteToFile(wordDict, "wordCount.txt")
+    # CheckWords(phishingList, wordList)
+    # WriteToFile(wordList, "Lists/phishingWordList.txt")
 
 
     # ==========Compiling words from EasyHam============
-    # wordDict = GetEMLEmail("..\easy_ham\easy_ham", wordDict)
-    # WriteToFile(wordDict, "wordCountEasyHam.txt") 
+    # wordList = CheckEMLEmail("..\easy_ham\easy_ham", wordList)
+    # WriteToFile(wordList, "Lists/easyHamWordList.txt") 
     
     # ==========Compiling words from HardHam============
-    # wordDict = GetEMLEmail("..\hard_ham\hard_ham", wordDict)
-    # WriteToFile(wordDict, "wordCountHardHam.txt") 
+    # wordList = CheckEMLEmail("..\hard_ham\hard_ham", wordList)
+    # WriteToFile(wordList, "Lists/hardHamWordList.txt") 
 
     # ==========Compiling all the words=============
-    # CompileWordList("wordCount.txt", "wordCountEasyHam.txt")
-    # CompileWordList("compiledWordList.txt", "wordCountHardHam.txt")
+    # CompileWordList("Lists\phishingWordList.txt", "Lists\easyHamWordList.txt")
+    # CompileWordList("Lists\compiledWordList.txt", "Lists\hardHamWordList.txt")
 
     # LogOddsSmoothing()
     
