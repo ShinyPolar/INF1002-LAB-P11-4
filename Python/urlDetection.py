@@ -1,6 +1,6 @@
 import re
 from urllib.parse import urlparse
-from main import CleanText
+from ParseEmail import SetBodyCleanText
 def extract_urls_from_text(text: str):
     # matches http://, https://, or www.something
     url_pattern = r'(https?://[^\s]+|www\.[^\s]+)'
