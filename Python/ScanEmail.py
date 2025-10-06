@@ -6,13 +6,15 @@ and returns a risk score based on the findings
 '''
 
 import mailbox
+import os
 from email.header import decode_header
+import ParseEmail as pe
 
 
 
-suspiciouswords = [] 
-riskScoreSubject = riskScoreBody = 0
-
+suspiciousWords = {}
+riskScoreSubject = float(0.0)
+riskScoreBody = float(0.0)
 def ScanEmail(email: mailbox.mboxMessage, urls: list=[])->int:
     '''Scan the email for suspicious words if there are suspicious words found it would check if it is the first 100 words of the email body.
     Decode the subject line of the email.
@@ -23,8 +25,12 @@ def ScanEmail(email: mailbox.mboxMessage, urls: list=[])->int:
 
     ScanSubject(email)
     ScanBody(email)
+    print(f"risk: {riskScoreSubject}, risk: {riskScoreBody}")
 
-    return riskScoreSubject + riskScoreBody
+    #Clamp values
+    riskScore = int(riskScoreSubject+riskScoreBody)
+    riskScore = max(0, min(riskScore, 40))
+    return riskScore
     #scanURLs(urls)
 
 def ScanSubject(email: mailbox.mboxMessage):
@@ -40,16 +46,16 @@ def ScanSubject(email: mailbox.mboxMessage):
     
     # Theres a problem here for dataset no.2132 from easy_ham where the encoding is unknown-8(or smthg liddat)
     subject = ''.join(part.decode(charset or 'utf-8') if isinstance(part, bytes) else part for part, charset in subject)
-    subject = subject.lower()
+    #subject = subject.lower()
     print(subject)
 
     global riskScoreSubject
 
     print(f"\n\nIn subject line:")
-    for i in suspiciouswords:
-        if i in subject:
-            print(f"Found suspicious word '{i}' in subject line.")
-            riskScoreSubject += 15
+    for word, weightage in suspiciousWords.items():
+        if word in subject:
+            print(f"Found suspicious word '{word}' in subject line.")
+            riskScoreSubject += 3 * weightage
     pass
 
 def ScanBody(email: mailbox.mboxMessage):
@@ -61,22 +67,23 @@ def ScanBody(email: mailbox.mboxMessage):
     global riskScoreBody
     foundWords = []
     foundWords100 = []
-    
-    for word in suspiciouswords:
-        if word in email.get_payload():
+    plainText = pe.GetPlainText(email)
+    for word, weightage in suspiciousWords.items():
+        if word in plainText:
             foundWords.append(word)
             #potentially faster if using dictionary/list maybe?
 
-            riskScoreBody += 1
+            riskScoreBody += 1 * weightage
             #place holder until we decide how riskScoring will work
 
-            first_100_words = email.get_payload().split()
+            first_100_words = plainText.split()
             first_100_words = first_100_words[:100]
 
             for position in first_100_words:
                 if word == position:
                     foundWords100.append(word)
-                    riskScoreBody += 10
+                    riskScoreBody += 2 * weightage
+
 
     
     #Printing the results
@@ -99,12 +106,16 @@ def ScanBody(email: mailbox.mboxMessage):
             print(f"'{foundWords100[i]}'", end="\n\n")
     return
 
-def SetSuspiciousWords(path: str):
-    '''Set the list of suspicious words
+def SetSuspiciousWords(file: str):
+    '''Set the dictionary of suspicious words
     '''
     global suspiciouswords
-    file = open(path, "r")
-    suspiciouswords = file.read().splitlines()
-    file.close()
+    textfile = open(os.path.join("Lists", file), "r")
+    for line in textfile:
+        word, weightage = line.split(": ")
+        word = word.strip()
+        weightage = float(weightage.strip())
+        suspiciousWords[word] = weightage
+    textfile.close()
     pass
 
