@@ -29,7 +29,8 @@ def CheckWords(mailList: list, wordList: list):
     
     #Checks the words in body
     for email in mailList:
-        bodyString = email.get_payload()
+        bodyString = pe.GetPlainText(email)
+        
         wordList = CheckString(bodyString, wordList)
 
     #Checks for stopwords, and removes them if in list
@@ -104,7 +105,7 @@ def EmailFreq(emailList: list)-> Counter:
 
     emailFrequency = Counter()
     for email in emailList:
-        wordList = email.get_payload().split(" ")
+        wordList = pe.GetPlainText(email).split(" ")
         emailFrequency.update(set(wordList))  # set -> document freq
     return emailFrequency
 
@@ -183,8 +184,8 @@ def CheckEMLEmail(path: str, wordList: list):
         f = str(f)
         newpath = os.path.join(path, f)
         eml = pe.ParseSingleEML(newpath)
-        clean = pe.SetBodyCleanText(eml)
-        CheckWordsEML(clean, wordList)
+        plain = pe.GetPlainText(eml)
+        CheckWordsEML(plain, wordList)
 
     return wordList
 
@@ -211,10 +212,18 @@ def LogOddsSmoothing():
     for f in os.listdir(directory):
         file = os.path.join(directory, f)
 
-        emailToScan = pe.ParseSingleEML(file)    #parse the sampleEmail to readable status for eml files
+        emailToScan = pe.ParseSingleEML(file) 
         pe.SetBodyCleanText(emailToScan)
         hamList.append(emailToScan)
         totalHamEmail += 1
+    directory = "..\hard_ham\hard_ham"
+    for f in os.listdir(directory):
+            file = os.path.join(directory, f)
+
+            emailToScan = pe.ParseSingleEML(file)    
+            pe.SetBodyCleanText(emailToScan)
+            hamList.append(emailToScan)
+            totalHamEmail += 1
 
     # Calculates phishing and ham frequency
     phishingWordFreq = EmailFreq(phishingList)
@@ -241,7 +250,7 @@ def LogOddsSmoothing():
 
 if __name__=='__main__':
     
-    #wordList = []
+    wordList = []
     # ==========Compiling words from PhishingEmails===========
     # phishingList = pe.ParseMBox("../phishing_dataset/phishing3.mbox")
     # CheckWords(phishingList, wordList)
@@ -249,18 +258,18 @@ if __name__=='__main__':
 
 
     # ==========Compiling words from EasyHam============
-    # wordList = CheckEMLEmail("..\easy_ham\easy_ham", wordList)
+    # wordList = CheckEMLEmail("../easy_ham/easy_ham", wordList)
     # WriteToFile(wordList, "Lists/easyHamWordList.txt") 
     
     # ==========Compiling words from HardHam============
-    # wordList = CheckEMLEmail("..\hard_ham\hard_ham", wordList)
+    # wordList = CheckEMLEmail("../hard_ham/hard_ham", wordList)
     # WriteToFile(wordList, "Lists/hardHamWordList.txt") 
 
     # ==========Compiling all the words=============
-    # CompileWordList("Lists\phishingWordList.txt", "Lists\easyHamWordList.txt")
-    # CompileWordList("Lists\compiledWordList.txt", "Lists\hardHamWordList.txt")
+    # CompileWordList("Lists/phishingWordList.txt", "Lists/easyHamWordList.txt")
+    # CompileWordList("Lists/compiledWordList.txt", "Lists/hardHamWordList.txt")
 
-    # LogOddsSmoothing()
+    LogOddsSmoothing()
     
 
 #    print(type(ParseMBox("../INF1002-LAB-P11-4/phishing_dataset/phishing0.mbox")))

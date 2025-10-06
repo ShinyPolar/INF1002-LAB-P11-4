@@ -53,11 +53,11 @@ def ParseMBox(path: str):
     '''Parse the mbox file and return a list of email messages
     '''
     mbox = mailbox.mbox(path)
-    phishing_mailList = [] 
-    for message in mbox:
-        #Cleans payload text beforehand 
-        SetBodyCleanText(message)
-        phishing_mailList.append(message)
+    phishing_mailList = [message for message in mbox] 
+    # for message in mbox:
+    #     #Cleans payload text beforehand 
+    #     SetBodyCleanText(message)
+    #     phishing_mailList.append(message)
 
     #Returns the mbox in a list of mbox.Message
     return phishing_mailList
@@ -84,6 +84,9 @@ def ParseEmail(path: str):
     return email
 
 def TryDecode(decodeText:str, charset):
+    r"""Tries to decode payload of mbox.
+    Returns the string if it is able to decode, otherwise decode it in utf-8
+    """
     returnString = ""
     try:
         returnString = decodeText.decode(charset or "utf-8", errors="replace")
@@ -92,7 +95,7 @@ def TryDecode(decodeText:str, charset):
     return returnString
 
 
-def SetBodyCleanText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
+def SetBodyCleanText(msg: mailbox.mboxMessage)->str:
     '''Extract texts from an email message, handling both plain text and HTML parts,
     then subsequently set it as the new payload of the email message.'''
     plainText = htmlText = ""
@@ -115,3 +118,13 @@ def SetBodyCleanText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
     #print(cleanText)
     msg.set_payload(cleanText)
     return cleanText
+
+def GetPlainText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
+    plainText = ""
+    if msg.is_multipart():
+        for part in msg.walk():
+            if part.get_content_type() == "text/plain":
+                plainText = TryDecode(part.get_payload(decode=True), part.get_content_charset())
+    else:
+        plainText = msg.get_payload()
+    return plainText
