@@ -21,6 +21,7 @@ def home():
     return flask.render_template("index.html", htmlText=app.config['HTMLTEXT'], 
                                  plainText=app.config['PLAINTEXT'],
                                  riskScore=app.config['RISKSCORE'],
+                                 riskScoreBlacklistDomain=app.config['RISKSCOREBL'],
                                  riskScoreWhitelistDomain=app.config['RISKSCOREWD'],
                                  riskScoreDistanceCheck=app.config['RISKSCOREDC'],
                                  riskScoreKeyword=app.config['RISKSCOREKW'],
@@ -42,6 +43,7 @@ def MainWorkflow(file: str, riskScore: int):
         raise ValueError("Unsupported email file type")
 
     #Initalizes different riskScores
+    riskScoreBlacklistDomain = 0
     riskScoreWhitelistDomain = riskScoreDistanceCheck = riskScoreKeyword = 0
     riskScoreURL = ''
     
@@ -69,6 +71,7 @@ def MainWorkflow(file: str, riskScore: int):
 
         print(f'Total Risk Score: {riskScore}')
         app.config['RISKSCORE'] = riskScore
+        app.config['RISKSCOREBL'] = riskScoreBlacklistDomain
         app.config['RISKSCOREWD'] = riskScoreWhitelistDomain
         app.config['RISKSCOREDC'] = riskScoreDistanceCheck
         app.config['RISKSCOREKW'] = riskScoreKeyword
@@ -99,6 +102,7 @@ def MainWorkflow(file: str, riskScore: int):
 
 
     app.config['RISKSCORE'] = riskScore
+    app.config['RISKSCOREBL'] = riskScoreBlacklistDomain
     app.config['RISKSCOREWD'] = riskScoreWhitelistDomain
     app.config['RISKSCOREDC'] = riskScoreDistanceCheck
     app.config['RISKSCOREKW'] = riskScoreKeyword
@@ -141,7 +145,7 @@ if __name__=='__main__':
 
 
     #======= The code below is to be ran for a single file only =======
-    file = "test_whitelist_email.txt"
+    file = "test_blacklist_email.txt"
     MainWorkflow(file, riskScore)
     app.run()
 
