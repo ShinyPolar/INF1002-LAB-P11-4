@@ -198,7 +198,7 @@ def LogOddsSmoothing():
 
     # Get list of words from all emails
     wordList = []
-    wordList = ConvertFileToList("Lists\compiledWordList.txt")
+    wordList = ConvertFileToList("Lists/compiledWordList.txt")
 
     # Get list of phishing emails
     phishingList = pe.ParseMBox("../phishing_dataset/phishing3.mbox")
@@ -207,7 +207,7 @@ def LogOddsSmoothing():
 
     # Get list of ham emails
     hamList = []
-    directory = "..\easy_ham\easy_ham"
+    directory = "../easy_ham/easy_ham"
     totalHamEmail = 0
     for f in os.listdir(directory):
         file = os.path.join(directory, f)
@@ -216,7 +216,7 @@ def LogOddsSmoothing():
         pe.SetBodyCleanText(emailToScan)
         hamList.append(emailToScan)
         totalHamEmail += 1
-    directory = "..\hard_ham\hard_ham"
+    directory = "../hard_ham/hard_ham"
     for f in os.listdir(directory):
             file = os.path.join(directory, f)
 

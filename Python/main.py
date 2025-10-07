@@ -11,7 +11,22 @@ import urlDetection as ud
 import ScanEmail as se
 import ParseEmail as pe
 
+#=======Flask===========
+import flask
 
+app = flask.Flask(__name__)
+
+@app.route('/')
+def home():
+    return flask.render_template("index.html", htmlText=app.config['HTMLTEXT'], 
+                                 plainText=app.config['PLAINTEXT'],
+                                 riskScore=app.config['RISKSCORE'],
+                                 riskScoreWhitelistDomain=app.config['RISKSCOREWD'],
+                                 riskScoreDistanceCheck=app.config['RISKSCOREDC'],
+                                 riskScoreKeyword=app.config['RISKSCOREKW'],
+                                 riskScoreURL=app.config['RISKSCOREURL'])
+
+#=========Python===========
 def MainWorkflow(file: str, riskScore: int):
     """Main workflow for processing email files.
     Calls all the necessary functions and tabulates the riskScores
@@ -26,6 +41,9 @@ def MainWorkflow(file: str, riskScore: int):
     else:
         raise ValueError("Unsupported email file type")
 
+    #Initalizes different riskScores
+    riskScoreWhitelistDomain = riskScoreDistanceCheck = riskScoreKeyword = 0
+    riskScoreURL = ''
     #initialize whitelisted domains
     WhitelistedDomains = dc.LoadWhitelistedDomains("sampleWhitelistedDomains.txt")
 
@@ -36,21 +54,32 @@ def MainWorkflow(file: str, riskScore: int):
     sender = dc.GetSender(emailToScan)
 
     #checks if the sender's domain is whitelisted and add to risk score if not 
-    riskScore = dc.CheckWhitelistedDomain(sender,riskScore,WhitelistedDomains)
+    riskScoreWhitelistDomain = dc.CheckWhitelistedDomain(sender,riskScore,WhitelistedDomains)
 
     #if email fails whitelist check
-    if riskScore > 0:
+    if riskScoreWhitelistDomain > 0:
         #Edit distance check 
-        riskScore = dc.check_sender_levenshtein(sender,WhitelistedDomains,riskScore) 
+        riskScoreDistanceCheck = dc.check_sender_levenshtein(sender,WhitelistedDomains,riskScore) 
         #print(riskScore)
 
     #Scans the email for suspicious words
     urls = []
-    riskScore += se.ScanEmail(emailToScan, urls)
+    riskScoreKeyword = se.ScanEmail(emailToScan, urls)
 
     #Scan the URLs in the email for suspicious features
-    #riskScore += ud.scanURLs(urls, email_msg=emailToScan)
+    #riskScoreURL += ud.scanURLs(urls, email_msg=emailToScan)
+    riskScore = riskScoreDistanceCheck + riskScoreWhitelistDomain + riskScoreKeyword
+                    
     print(f'Total Risk Score: {riskScore}')
+
+
+    app.config['RISKSCORE'] = riskScore
+    app.config['RISKSCOREWD'] = riskScoreWhitelistDomain
+    app.config['RISKSCOREDC'] = riskScoreDistanceCheck
+    app.config['RISKSCOREKW'] = riskScoreKeyword
+    app.config['RISKSCOREURL'] = riskScoreURL
+    app.config['HTMLTEXT'] = pe.GetHTMLText(emailToScan)
+    app.config['PLAINTEXT'] = pe.GetPlainText(emailToScan)
 
     pass
 
@@ -59,7 +88,6 @@ if __name__=='__main__':
     #Initialization
     se.SetSuspiciousWords("wordWeightage.txt")
     riskScore = 0
-
 
     
     #======= If remove print from every function except the final riskScore, it would be cleaner ======
@@ -88,6 +116,7 @@ if __name__=='__main__':
 
 
     #======= The code below is to be ran for a single file only =======
-    file = "sampleEmail3.txt"
+    file = "sampleEmail1.txt"
     MainWorkflow(file, riskScore)
+    app.run()
 

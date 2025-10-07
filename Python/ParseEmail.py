@@ -125,6 +125,20 @@ def GetPlainText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
         for part in msg.walk():
             if part.get_content_type() == "text/plain":
                 plainText = TryDecode(part.get_payload(decode=True), part.get_content_charset())
-    else:
+    elif msg.get_content_type() == "text/plain":
         plainText = msg.get_payload()
+    else:
+        plainText = ""
     return plainText
+
+def GetHTMLText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
+    htmlText = ""
+    if msg.is_multipart():
+        for part in msg.walk():
+            if part.get_content_type() == "text/html":
+                htmlText = TryDecode(part.get_payload(decode=True), part.get_content_charset())
+    elif msg.get_content_type() == "text/html":
+        htmlText = msg.get_payload()
+    else:
+        htmlText = ""
+    return htmlText
