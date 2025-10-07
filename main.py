@@ -145,7 +145,7 @@ if __name__=='__main__':
 
 
     #======= The code below is to be ran for a single file only =======
-    file = "test_blacklist_email.txt"
+    file = "SampleEmail1.txt"
     MainWorkflow(file, riskScore)
     app.run()
 
