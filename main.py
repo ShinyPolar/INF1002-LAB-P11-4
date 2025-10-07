@@ -44,8 +44,12 @@ def MainWorkflow(file: str, riskScore: int):
     #Initalizes different riskScores
     riskScoreWhitelistDomain = riskScoreDistanceCheck = riskScoreKeyword = 0
     riskScoreURL = ''
+    
     #initialize whitelisted domains
     WhitelistedDomains = dc.LoadWhitelistedDomains("sampleWhitelistedDomains.txt")
+
+    # Initialize blacklisted domains
+    BlacklistedDomains = dc.LoadBlacklistedDomains("sampleBlacklistedDomains.txt")
 
     #clean the email text and extract URLs & remove the html if neccesary
     #pe.CleanText(emailToScan)
@@ -54,7 +58,28 @@ def MainWorkflow(file: str, riskScore: int):
     sender = dc.GetSender(emailToScan)
 
     #checks if the sender's domain is whitelisted and add to risk score if not 
-    riskScoreWhitelistDomain = dc.CheckWhitelistedDomain(sender,riskScore,WhitelistedDomains)
+    #riskScoreWhitelistDomain = dc.CheckWhitelistedDomain(sender,riskScore,WhitelistedDomains)
+
+    # Check the blacklist first
+    riskScoreBlacklistDomain = dc.CheckBlacklistedDomain(sender, BlacklistedDomains)
+
+    if riskScoreBlacklistDomain == 100:
+        # Immediate block: set total riskScore to max and skip other checks
+        riskScore = riskScoreBlacklistDomain
+
+        print(f'Total Risk Score: {riskScore}')
+        app.config['RISKSCORE'] = riskScore
+        app.config['RISKSCOREWD'] = riskScoreWhitelistDomain
+        app.config['RISKSCOREDC'] = riskScoreDistanceCheck
+        app.config['RISKSCOREKW'] = riskScoreKeyword
+        app.config['RISKSCOREURL'] = riskScoreURL
+        app.config['HTMLTEXT'] = pe.GetHTMLText(emailToScan)
+        app.config['PLAINTEXT'] = pe.GetPlainText(emailToScan)
+        return  # STOP further code execution if blacklisted
+
+    # Only executes for NON-BLACKLISTED domains:
+    # Check if the sender's domain is whitelisted and add to risk score if not
+    riskScoreWhitelistDomain = dc.CheckWhitelistedDomain(sender, riskScore, WhitelistedDomains)
 
     #if email fails whitelist check
     if riskScoreWhitelistDomain > 0:
@@ -116,7 +141,7 @@ if __name__=='__main__':
 
 
     #======= The code below is to be ran for a single file only =======
-    file = "sampleEmail1.txt"
+    file = "test_whitelist_email.txt"
     MainWorkflow(file, riskScore)
     app.run()
 
