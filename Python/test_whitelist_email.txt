@@ -1,0 +1,10 @@
+From: "Test Whitelist" <support@goggol.com>
+Subject: Your Account Update
+
+Dear user,
+This is a security notice from your trusted provider. Your account information is up to date and no action is required.
+If you still wish to review or update your account, please log in safely via our official website:
+https://goggol.com/account
+
+Thank you,
+Google Support Team
