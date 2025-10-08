@@ -6,6 +6,7 @@ Parsing Email Module
 import mailbox
 from email import message_from_file
 from email.message import EmailMessage
+from email.utils import parseaddr
 
 #for .eml files parsing
 from email import policy
@@ -158,6 +159,22 @@ def GetCleanHTMLText(msg: EmailMessage)->str:
     return cleanHTMLText
 
     return
+def GetSender(email)->str:
+    '''
+    Extract Sender from the email.
+    
+    Args:
+        email: parsed email object (dict-like with "From" header).
+
+    Returns:
+        Email address of sender
+    '''
+    #gets sender information via the from header, this consists of sender display name + email address
+    sender = email.get("From") or email.get("from")
+
+    #splits the from header into sender display name [index 0] + email address [index 1], and assigns email address to addr
+    addr = parseaddr(sender)[1]
+    return addr
 
 def GetRecepient(msg: EmailMessage)->str:
     '''

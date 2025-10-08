@@ -1,4 +1,8 @@
-from email.utils import parseaddr
+r'''
+Module to check sender email domain
+
+
+'''
 from Levenshtein import distance
 
 def LoadWhitelistedDomains(filename: str) -> list:
@@ -57,22 +61,6 @@ def LoadBlacklistedDomains(filename: str) -> list:
     # print(BlacklistedDomains)
     return BlacklistedDomains
 
-def GetSender(email)->str:
-    '''
-    Extract Sender from the email.
-    
-    Args:
-        email: parsed email object (dict-like with "From" header).
-
-    Returns:
-        Email address of sender
-    '''
-    #gets sender information via the from header, this consists of sender display name + email address
-    sender = email.get("From") or email.get("from")
-
-    #splits the from header into sender display name [index 0] + email address [index 1], and assigns email address to addr
-    addr = parseaddr(sender)[1]
-    return addr
 
 def CheckWhitelistedDomain(emailadd,riskScore,WhitelistedDomains):
     '''
@@ -124,7 +112,7 @@ def CheckBlacklistedDomain(emailadd, BlacklistedDomains):
         Integer risk score (max risk for blacklist hit, else 0)
     '''
 
-    max_risk = 100  # defining the maximum risk score for a blacklisted domain, indicating a block
+    max_risk = 185  # defining the maximum risk score for a blacklisted domain, indicating a block
 
     if not emailadd:  # if no sender email address is provided, mark as suspicious and block
         print(f"Suspicious email: invalid sender '{emailadd}'")
@@ -165,7 +153,7 @@ def CheckBlacklistThenWhitelist(emailadd, riskScore, WhitelistedDomains, Blackli
     blk_risk = CheckBlacklistedDomain(emailadd, BlacklistedDomains)
 
     # If blk_risk equals 100, it means the domain is blacklisted and we block immediately by returning max risk
-    if blk_risk == 100:
+    if blk_risk == 185:
         return blk_risk  # block immediately without further checks
 
     # If domain is not blacklisted, proceed to check if it is whitelisted

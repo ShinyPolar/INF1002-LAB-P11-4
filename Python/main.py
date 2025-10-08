@@ -21,6 +21,7 @@ def home():
     return flask.render_template("index.html", htmlText=app.config['HTMLTEXT'], 
                                  plainText=app.config['PLAINTEXT'],
                                  riskScore=app.config['RISKSCORE'],
+                                 riskLvl=app.config['RISKLVL'],
                                  riskScoreBlacklistDomain=app.config['RISKSCOREBL'],
                                  riskScoreWhitelistDomain=app.config['RISKSCOREWD'],
                                  riskScoreDistanceCheck=app.config['RISKSCOREDC'],
@@ -49,35 +50,43 @@ def MainWorkflow(file: str, riskScore: int):
     riskScoreWhitelistDomain = riskScoreDistanceCheck = riskScoreKeyword = riskScoreURL = 0
     
     #initialize whitelisted domains
-    WhitelistedDomains = dc.LoadWhitelistedDomains("sampleWhitelistedDomains.txt")
+    WhitelistedDomains = dc.LoadWhitelistedDomains("Domains/sampleWhitelistedDomains.txt")
 
     # Initialize blacklisted domains
-    BlacklistedDomains = dc.LoadBlacklistedDomains("sampleBlacklistedDomains.txt")
+    BlacklistedDomains = dc.LoadBlacklistedDomains("Domains/sampleBlacklistedDomains.txt")
 
     #clean the email text and extract URLs & remove the html if neccesary
     #pe.CleanText(emailToScan)
 
     #gets sender email address from the "from" header in the email
-    sender = dc.GetSender(emailToScan)
+    sender = pe.GetSender(emailToScan)
+
+    #gets recepient email from the "to" header in the email
+    recepient = pe.GetRecepient(emailToScan)
+
+    #email to display on web UI
+    htmltext = pe.GetHTMLText(emailToScan)
+    plaintext = pe.GetPlainText(emailToScan)
 
     # Check the blacklist first
     riskScoreBlacklistDomain = dc.CheckBlacklistedDomain(sender, BlacklistedDomains)
 
-    if riskScoreBlacklistDomain == 100:
+    if riskScoreBlacklistDomain == 185:
         # Immediate block: set total riskScore to max and skip other checks
         riskScore = riskScoreBlacklistDomain
 
         print(f'Total Risk Score: {riskScore}')
         app.config['RISKSCORE'] = riskScore
+        app.config['RISKLVL'] = "High. Very likely to be a phishing email"
         app.config['RISKSCOREBL'] = riskScoreBlacklistDomain
         app.config['RISKSCOREWD'] = riskScoreWhitelistDomain
         app.config['RISKSCOREDC'] = riskScoreDistanceCheck
         app.config['RISKSCOREKW'] = riskScoreKeyword
         app.config['RISKSCOREURL'] = riskScoreURL
-        app.config['HTMLTEXT'] = pe.GetHTMLText(emailToScan)
-        app.config['PLAINTEXT'] = pe.GetPlainText(emailToScan)
+        app.config['HTMLTEXT'] = htmltext
+        app.config['PLAINTEXT'] = plaintext
         app.config['SENDER'] = sender
-        app.config['RECEPIENT'] = pe.GetRecepient(emailToScan)
+        app.config['RECEPIENT'] = recepient
         return  # STOP further code execution if blacklisted
 
     # Only executes for NON-BLACKLISTED domains:
@@ -97,20 +106,30 @@ def MainWorkflow(file: str, riskScore: int):
     #Scan the URLs in the email for suspicious features
     #riskScoreURL += ud.scanURLs(urls, email_msg=emailToScan)
     riskScore = riskScoreDistanceCheck + riskScoreWhitelistDomain + riskScoreKeyword + riskScoreURL
+
+    #Assign Severity
+    if riskScore < 40:
+        riskLvl = "Low. Unlikely to be Phising"
+    elif riskScore <= 100:
+        riskLvl = "Medium. Could be a Phishing email"
+    else:
+        riskLvl = "High. Very likely to be a phishing email"
                     
     print(f'Total Risk Score: {riskScore}')
+    print(f'Risk Level:{riskLvl}')
 
     # For Web UI visualisation
     app.config['RISKSCORE'] = riskScore
+    app.config['RISKLVL'] = riskLvl
     app.config['RISKSCOREBL'] = riskScoreBlacklistDomain
     app.config['RISKSCOREWD'] = riskScoreWhitelistDomain
     app.config['RISKSCOREDC'] = riskScoreDistanceCheck
     app.config['RISKSCOREKW'] = riskScoreKeyword
     app.config['RISKSCOREURL'] = riskScoreURL
-    app.config['HTMLTEXT'] = pe.GetHTMLText(emailToScan)
-    app.config['PLAINTEXT'] = pe.GetPlainText(emailToScan)
+    app.config['HTMLTEXT'] = htmltext
+    app.config['PLAINTEXT'] = plaintext
     app.config['SENDER'] = sender
-    app.config['RECEPIENT'] = pe.GetRecepient(emailToScan)
+    app.config['RECEPIENT'] = recepient
 
     pass
 
@@ -147,7 +166,7 @@ if __name__=='__main__':
 
 
     #======= The code below is to be ran for a single file only =======
-    file = "sampleEmail3.txt"
+    file = "TestEmails/sampleEmail1.txt"
     MainWorkflow(file, riskScore)
     app.run()
 
