@@ -5,7 +5,7 @@ Parsing Email Module
 '''
 import mailbox
 from email import message_from_file
-
+from email.message import EmailMessage
 
 #for .eml files parsing
 from email import policy
@@ -95,7 +95,7 @@ def TryDecode(decodeText:str, charset):
     return returnString
 
 
-def SetBodyCleanText(msg: mailbox.mboxMessage)->str:
+def SetBodyCleanText(msg: EmailMessage)->str:
     '''Extract texts from an email message, handling both plain text and HTML parts,
     then subsequently set it as the new payload of the email message.'''
     plainText = htmlText = ""
@@ -119,7 +119,7 @@ def SetBodyCleanText(msg: mailbox.mboxMessage)->str:
     msg.set_payload(cleanText)
     return cleanText
 
-def GetPlainText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
+def GetPlainText(msg: EmailMessage)->str:
     plainText = ""
     if msg.is_multipart():
         for part in msg.walk():
@@ -131,7 +131,7 @@ def GetPlainText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
         plainText = ""
     return plainText
 
-def GetHTMLText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
+def GetHTMLText(msg: EmailMessage)->str:
     htmlText = ""
     if msg.is_multipart():
         for part in msg.walk():
@@ -142,3 +142,27 @@ def GetHTMLText(msg: mailbox.mboxMessage)->mailbox.mboxMessage:
     else:
         htmlText = ""
     return htmlText
+
+def GetCleanHTMLText(msg: EmailMessage)->str:
+    cleanHTMLText = ""
+    if msg.is_multipart():
+        for part in msg.walk():
+            if part.get_content_type() == "text/html":
+                cleanHTMLText = TryDecode(part.get_payload(decode=True), part.get_content_charset())
+                cleanHTMLText = strip_html(cleanHTMLText)
+    elif msg.get_content_type() == "text/html":
+        cleanHTMLText = msg.get_payload()
+        cleanHTMLText = strip_html(cleanHTMLText)
+    else:
+        cleanHTMLText = ""
+    return cleanHTMLText
+
+    return
+
+def GetRecepient(msg: EmailMessage)->str:
+    '''
+    Gets recepient from email
+    '''
+    sender = msg.get("To") or msg.get("to")
+
+    return sender

@@ -20,6 +20,13 @@
             margin: 5px 0;
         }
 
+        .overall-display{
+            display: flex;
+            flex-direction: column; /* stack title and content vertically */
+            height: 90vh;
+
+        }
+
         .display-emails {
             display: flex;
             gap: 20px;                /* space between boxes */
@@ -54,6 +61,10 @@
 
 
         </div>
+
+        <div class="overall-display">
+            <h1>Sender: {{sender}}</h1>
+            <h1>Recepient: {{recepient}}</h1>
         <div class="display-emails">
             <div class="display-box">
             <h4>Plain Text</h4>
@@ -69,6 +80,7 @@
 
             </div>
             </div>
+        </div>
         </div>
     </body>
 </html>

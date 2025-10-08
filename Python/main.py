@@ -24,7 +24,9 @@ def home():
                                  riskScoreWhitelistDomain=app.config['RISKSCOREWD'],
                                  riskScoreDistanceCheck=app.config['RISKSCOREDC'],
                                  riskScoreKeyword=app.config['RISKSCOREKW'],
-                                 riskScoreURL=app.config['RISKSCOREURL'])
+                                 riskScoreURL=app.config['RISKSCOREURL'],
+                                 sender=app.config['SENDER'],
+                                 recepient=app.config['RECEPIENT'])
 
 #=========Python===========
 def MainWorkflow(file: str, riskScore: int):
@@ -42,8 +44,8 @@ def MainWorkflow(file: str, riskScore: int):
         raise ValueError("Unsupported email file type")
 
     #Initalizes different riskScores
-    riskScoreWhitelistDomain = riskScoreDistanceCheck = riskScoreKeyword = 0
-    riskScoreURL = ''
+    riskScoreWhitelistDomain = riskScoreDistanceCheck = riskScoreKeyword = riskScoreURL = 0
+    
     #initialize whitelisted domains
     WhitelistedDomains = dc.LoadWhitelistedDomains("sampleWhitelistedDomains.txt")
 
@@ -72,7 +74,7 @@ def MainWorkflow(file: str, riskScore: int):
                     
     print(f'Total Risk Score: {riskScore}')
 
-
+    # For Web UI visualisation
     app.config['RISKSCORE'] = riskScore
     app.config['RISKSCOREWD'] = riskScoreWhitelistDomain
     app.config['RISKSCOREDC'] = riskScoreDistanceCheck
@@ -80,6 +82,8 @@ def MainWorkflow(file: str, riskScore: int):
     app.config['RISKSCOREURL'] = riskScoreURL
     app.config['HTMLTEXT'] = pe.GetHTMLText(emailToScan)
     app.config['PLAINTEXT'] = pe.GetPlainText(emailToScan)
+    app.config['SENDER'] = sender
+    app.config['RECEPIENT'] = pe.GetRecepient(emailToScan)
 
     pass
 
@@ -116,7 +120,7 @@ if __name__=='__main__':
 
 
     #======= The code below is to be ran for a single file only =======
-    file = "sampleEmail1.txt"
+    file = "sampleEmail3.txt"
     MainWorkflow(file, riskScore)
     app.run()
 

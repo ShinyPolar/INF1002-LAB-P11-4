@@ -67,17 +67,20 @@ def ScanBody(email: mailbox.mboxMessage):
     global riskScoreBody
     foundWords = []
     foundWords100 = []
-    plainText = pe.GetPlainText(email)
+    textToScan = pe.GetPlainText(email)
+    if not textToScan:
+        textToScan = pe.GetCleanHTMLText(email) 
+    textToScanList = textToScan.split()
     for word, weightage in suspiciousWords.items():
-        if word in plainText:
+        if word in textToScanList:
             foundWords.append(word)
             #potentially faster if using dictionary/list maybe?
 
             riskScoreBody += 1 * weightage
             #place holder until we decide how riskScoring will work
 
-            first_100_words = plainText.split()
-            first_100_words = first_100_words[:100]
+            #first_100_words = textToScan.split()
+            first_100_words = textToScanList[:100]
 
             for position in first_100_words:
                 if word == position:
