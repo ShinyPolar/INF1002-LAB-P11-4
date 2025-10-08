@@ -29,6 +29,34 @@ def LoadWhitelistedDomains(filename: str) -> list:
     # print(WhitelistedDomains)
     return WhitelistedDomains
 
+def LoadBlacklistedDomains(filename: str) -> list:
+    '''
+    Reads a text file containing blacklisted domains (one per line)
+    and stores them in the global BlacklistedDomains list.
+
+    Args:
+        filename: path to the text file
+
+    Returns:
+        The updated BlacklistedDomains list
+    '''
+    #global BlacklistedDomains
+    #BlacklistedDomains.clear()  # reset before loading
+    BlacklistedDomains = []
+    try:
+        with open(filename, "r") as f:
+            for line in f:
+                domain = line.strip().lower()
+                if domain and not domain.startswith("#"):  # skip blanks & comments
+                    BlacklistedDomains.append(domain)
+    except FileNotFoundError:
+        print(f"Blacklist file '{filename}' not found.")
+    except Exception as e:
+        print(f"Error reading blacklist file: {e}")
+
+    # print(BlacklistedDomains)
+    return BlacklistedDomains
+
 def GetSender(email)->str:
     '''
     Extract Sender from the email.
@@ -81,6 +109,68 @@ def CheckWhitelistedDomain(emailadd,riskScore,WhitelistedDomains):
         #Does not add to risk score if sender email address is whitelisted
         print(f'\nSender email address ({emailadd}) is whitelisted')
         return riskScore
+
+def CheckBlacklistedDomain(emailadd, BlacklistedDomains):
+    '''
+    Check if the sender's email domain is in the blacklist.
+    - If blacklisted: return maximum risk score indicating an immediate block.
+    - If not blacklisted: return zero as no risk added by blacklist check.
+    
+    Args:
+        emailadd: sender email address
+        BlacklistedDomains: List containing Blacklisted Domain names
+    
+    Returns:
+        Integer risk score (max risk for blacklist hit, else 0)
+    '''
+
+    max_risk = 100  # defining the maximum risk score for a blacklisted domain, indicating a block
+
+    if not emailadd:  # if no sender email address is provided, mark as suspicious and block
+        print(f"Suspicious email: invalid sender '{emailadd}'")
+        return max_risk
+
+    elif "@" not in emailadd:  # if the sender email does not contain '@', mark as suspicious and block
+        print(f"Suspicious email: sender email address '{emailadd}' does not contain '@'")
+        return max_risk
+
+    # splits the email address into username and domain name, converts domain to lowercase for consistent comparison
+    domain = emailadd.split("@")[-1].lower() 
+
+    # check if the extracted domain is in the blacklist
+    if domain in BlacklistedDomains:
+        print(f"Blocked email: sender domain '{domain}' is in blacklist.")
+        return max_risk  # immediately block by returning max risk score
+
+    # if domain is not blacklisted, return 0 indicating no blacklist risk
+    return 0
+
+def CheckBlacklistThenWhitelist(emailadd, riskScore, WhitelistedDomains, BlacklistedDomains):
+    '''
+    Check sender's email domain against blacklist first then whitelist:
+    - If domain is blacklisted: block immediately with max risk score.
+    - If not blacklisted: check whitelist to allow or add penalty if untrusted.
+    
+    Args:
+        emailadd: sender email address
+        riskScore: current risk score before domain checks
+        WhitelistedDomains: list of trusted domains
+        BlacklistedDomains: list of malicious domains
+    
+    Returns:
+        Updated risk score (max risk for blacklist hit, increased for not whitelisted, unchanged if whitelisted)
+    '''
+
+    # Check the blacklist first to immediately block if the sender domain is blacklisted
+    blk_risk = CheckBlacklistedDomain(emailadd, BlacklistedDomains)
+
+    # If blk_risk equals 100, it means the domain is blacklisted and we block immediately by returning max risk
+    if blk_risk == 100:
+        return blk_risk  # block immediately without further checks
+
+    # If domain is not blacklisted, proceed to check if it is whitelisted
+    # This will return the risk score unchanged if whitelisted, or add penalty if not
+    return CheckWhitelistedDomain(emailadd, riskScore, WhitelistedDomains)
 
 # edit distance check
 def levenshtein(source: str, target: str) -> int:

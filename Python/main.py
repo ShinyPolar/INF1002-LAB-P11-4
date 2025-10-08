@@ -21,6 +21,7 @@ def home():
     return flask.render_template("index.html", htmlText=app.config['HTMLTEXT'], 
                                  plainText=app.config['PLAINTEXT'],
                                  riskScore=app.config['RISKSCORE'],
+                                 riskScoreBlacklistDomain=app.config['RISKSCOREBL'],
                                  riskScoreWhitelistDomain=app.config['RISKSCOREWD'],
                                  riskScoreDistanceCheck=app.config['RISKSCOREDC'],
                                  riskScoreKeyword=app.config['RISKSCOREKW'],
@@ -42,10 +43,15 @@ def MainWorkflow(file: str, riskScore: int):
         raise ValueError("Unsupported email file type")
 
     #Initalizes different riskScores
+    riskScoreBlacklistDomain = 0
     riskScoreWhitelistDomain = riskScoreDistanceCheck = riskScoreKeyword = 0
     riskScoreURL = ''
+    
     #initialize whitelisted domains
     WhitelistedDomains = dc.LoadWhitelistedDomains("sampleWhitelistedDomains.txt")
+
+    # Initialize blacklisted domains
+    BlacklistedDomains = dc.LoadBlacklistedDomains("sampleBlacklistedDomains.txt")
 
     #clean the email text and extract URLs & remove the html if neccesary
     #pe.CleanText(emailToScan)
@@ -54,7 +60,29 @@ def MainWorkflow(file: str, riskScore: int):
     sender = dc.GetSender(emailToScan)
 
     #checks if the sender's domain is whitelisted and add to risk score if not 
-    riskScoreWhitelistDomain = dc.CheckWhitelistedDomain(sender,riskScore,WhitelistedDomains)
+    #riskScoreWhitelistDomain = dc.CheckWhitelistedDomain(sender,riskScore,WhitelistedDomains)
+
+    # Check the blacklist first
+    riskScoreBlacklistDomain = dc.CheckBlacklistedDomain(sender, BlacklistedDomains)
+
+    if riskScoreBlacklistDomain == 100:
+        # Immediate block: set total riskScore to max and skip other checks
+        riskScore = riskScoreBlacklistDomain
+
+        print(f'Total Risk Score: {riskScore}')
+        app.config['RISKSCORE'] = riskScore
+        app.config['RISKSCOREBL'] = riskScoreBlacklistDomain
+        app.config['RISKSCOREWD'] = riskScoreWhitelistDomain
+        app.config['RISKSCOREDC'] = riskScoreDistanceCheck
+        app.config['RISKSCOREKW'] = riskScoreKeyword
+        app.config['RISKSCOREURL'] = riskScoreURL
+        app.config['HTMLTEXT'] = pe.GetHTMLText(emailToScan)
+        app.config['PLAINTEXT'] = pe.GetPlainText(emailToScan)
+        return  # STOP further code execution if blacklisted
+
+    # Only executes for NON-BLACKLISTED domains:
+    # Check if the sender's domain is whitelisted and add to risk score if not
+    riskScoreWhitelistDomain = dc.CheckWhitelistedDomain(sender, riskScore, WhitelistedDomains)
 
     #if email fails whitelist check
     if riskScoreWhitelistDomain > 0:
@@ -74,6 +102,7 @@ def MainWorkflow(file: str, riskScore: int):
 
 
     app.config['RISKSCORE'] = riskScore
+    app.config['RISKSCOREBL'] = riskScoreBlacklistDomain
     app.config['RISKSCOREWD'] = riskScoreWhitelistDomain
     app.config['RISKSCOREDC'] = riskScoreDistanceCheck
     app.config['RISKSCOREKW'] = riskScoreKeyword
