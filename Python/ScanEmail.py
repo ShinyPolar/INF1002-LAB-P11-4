@@ -29,7 +29,7 @@ def ScanEmail(email: mailbox.mboxMessage, urls: list=[])->int:
 
     #Clamp values
     riskScore = int(riskScoreSubject+riskScoreBody)
-    riskScore = max(0, min(riskScore, 40))
+    riskScore = max(0, min(riskScore, 30))
     return riskScore
     #scanURLs(urls)
 
