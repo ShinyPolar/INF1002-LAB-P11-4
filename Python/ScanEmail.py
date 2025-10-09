@@ -16,7 +16,7 @@ suspiciousWords = {}
 riskScoreSubject = float(0.0)
 riskScoreBody = float(0.0)
 def ScanEmail(email: mailbox.mboxMessage, urls: list=[])->int:
-    '''Scan the email for suspicious words if there are suspicious words found it would check if it is the first 100 words of the email body.
+    '''Scan the email for suspicious words if there are suspicious words found it would check if it is the first 30 words of the email body.
     Decode the subject line of the email.
     '''
     #Reinitialize the risk scores for subject and body
@@ -53,7 +53,7 @@ def ScanSubject(email: mailbox.mboxMessage):
 
     print(f"\n\nIn subject line:")
     for word, weightage in suspiciousWords.items():
-        if word in subject:
+        if word == subject:
             print(f"Found suspicious word '{word}' in subject line.")
             riskScoreSubject += 3 * weightage
     pass
@@ -66,7 +66,7 @@ def ScanBody(email: mailbox.mboxMessage):
 
     global riskScoreBody
     foundWords = []
-    foundWords100 = []
+    foundWords30 = []
     textToScan = pe.GetPlainText(email)
     if not textToScan:
         textToScan = pe.GetCleanHTMLText(email) 
@@ -79,13 +79,13 @@ def ScanBody(email: mailbox.mboxMessage):
             riskScoreBody += 1 * weightage
             #place holder until we decide how riskScoring will work
 
-            #first_100_words = textToScan.split()
-            first_100_words = textToScanList[:100]
+            #first30Words = textToScan.split()
+            first30Words = textToScanList[:30]
 
-            for position in first_100_words:
+            for position in first30Words:
                 if word == position:
-                    foundWords100.append(word)
-                    riskScoreBody += 2 * weightage
+                    foundWords30.append(word)
+                    riskScoreBody += 3 * weightage
 
 
     
@@ -98,15 +98,15 @@ def ScanBody(email: mailbox.mboxMessage):
         else:
             print(f"'{foundWords[i]}'", end="\n\n")
 
-    #If no suspicious words were found in the first 100 words, we can skip this section
-    if not foundWords100:
+    #If no suspicious words were found in the first 30 words, we can skip this section
+    if not foundWords30:
         return
-    print(f"Found in the first 100 words:")
-    for i in range(len(foundWords100)):
-        if i < len(foundWords100)-1:
-            print(f"'{foundWords100[i]}', ", end="")
+    print(f"Found in the first 30 words:")
+    for i in range(len(foundWords30)):
+        if i < len(foundWords30)-1:
+            print(f"'{foundWords30[i]}', ", end="")
         else:
-            print(f"'{foundWords100[i]}'", end="\n\n")
+            print(f"'{foundWords30[i]}'", end="\n\n")
     return
 
 def SetSuspiciousWords(file: str):
