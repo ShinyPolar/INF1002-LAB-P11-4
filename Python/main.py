@@ -125,7 +125,7 @@ def MainWorkflow(file: str, riskScore: int):
         WebUIVariables(riskScore,riskLvl,riskScoreBlacklistDomain
                        ,riskScoreWhitelistDomain,riskScoreDistanceCheck,riskScoreKeyword
                        ,riskScoreURL,htmltext,plaintext,sender,recepient)
-
+        return
     # Only executes for NON-BLACKLISTED domains:
     # Check if the sender's domain is whitelisted and add to risk score if not
     riskScoreWhitelistDomain = dc.CheckWhitelistedDomain(sender, riskScore, whitelistedDomains)
