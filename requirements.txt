@@ -1,3 +1,5 @@
 levenshtein
 beautifulsoup4
 flask
+whois
+tldextract
