@@ -16,6 +16,9 @@ import flask
 
 app = flask.Flask(__name__)
 
+# Global variable to hold filepath
+emailToScanFilePath = ""
+
 @app.route('/')
 def home():
     return flask.render_template("index.html", htmlText=app.config['HTMLTEXT'], 
@@ -29,6 +32,31 @@ def home():
                                  riskScoreURL=app.config['RISKSCOREURL'],
                                  sender=app.config['SENDER'],
                                  recepient=app.config['RECEPIENT'])
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    if 'file' not in flask.request.files:
+        return "No file uploaded", 400
+    file = flask.request.files['file']
+    if file.filename == '':
+        return "No selected file", 400
+
+    # Save temporarily if needed
+    filepath = os.path.join('uploads', file.filename)
+    file.save(filepath)
+
+    global emailToScanFilePath
+    emailToScanFilePath = filepath
+
+    return f"Processing complete"
+
+@app.route('/analyze', methods=['POST'])
+def rerun():
+    """Re-run MainWorkflow on the last uploaded file."""
+    global emailToScanFilePath
+
+    MainWorkflow(emailToScanFilePath, 0)
+    return flask.redirect(flask.url_for('home'))
 
 #=========Python===========
 def MainWorkflow(file: str, riskScore: int):
@@ -171,5 +199,5 @@ if __name__=='__main__':
     #======= The code below is to be ran for a single file only =======
     file = "TestEmails/sampleEmail2.txt"
     MainWorkflow(file, riskScore)
-    app.run()
+    app.run(debug=True)
 
