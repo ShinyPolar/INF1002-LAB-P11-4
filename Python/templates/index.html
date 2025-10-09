@@ -4,22 +4,18 @@
 <head>
     <title>Phishing Email Detector</title>
     <style>
-        .drop-area {
-            border: 3px dashed #ffffffab;
+        #drop-area {
+            border: 3px solid #ffffffab;
             border-radius: 20px;
             width: 60%;
-            margin: 40px auto;
-            padding: 30px;
-            text-align: center;
         }
 
-        .drop-area.highlight {
+        #drop-area.highlight {
             border-color: #66f;
             background-color: #f9f9ff;
         }
 
-        .rerun-btn {
-            display: none;
+        #rerun-btn {
             margin-top: 15px;
             padding: 8px 15px;
             background: #007BFF;
@@ -168,7 +164,7 @@
             })
             .then(response => response.text())
             .then(result => {
-                alert(result); // Show what the server returned
+                alert(result); 
             })
             .catch(error => {
                 console.error("Error:", error);
