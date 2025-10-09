@@ -77,13 +77,6 @@ def ParseSingleEML(path: str):
         msg = BytesParser(policy=policy.default).parse(f)
     return msg
 
-def ParseEmail(path: str):
-    '''Parse a single email file and return the email message
-    '''
-    with open(path, "r") as f:
-        email = message_from_file(f)
-    return email
-
 def TryDecode(decodeText:str, charset):
     r"""Tries to decode payload of mbox.
     Returns the string if it is able to decode, otherwise decode it in utf-8

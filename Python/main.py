@@ -59,6 +59,23 @@ def rerun():
     return flask.redirect(flask.url_for('home'))
 
 #=========Python===========
+def WebUIVariables(riskScore:int, riskLvl:str, riskScoreBlacklistDomain:int,riskScoreWhitelistDomain:int,riskScoreDistanceCheck:int,riskScoreKeyword:int,riskScoreURL:int,htmltext:str,plaintext:str,sender:str,recepient:str):
+    """
+    Function to display value of variables onto web UI
+    """
+    app.config['RISKSCORE'] = riskScore
+    app.config['RISKLVL'] = riskLvl
+    app.config['RISKSCOREBL'] = riskScoreBlacklistDomain
+    app.config['RISKSCOREWD'] = riskScoreWhitelistDomain
+    app.config['RISKSCOREDC'] = riskScoreDistanceCheck
+    app.config['RISKSCOREKW'] = riskScoreKeyword
+    app.config['RISKSCOREURL'] = riskScoreURL
+    app.config['HTMLTEXT'] = htmltext
+    app.config['PLAINTEXT'] = plaintext
+    app.config['SENDER'] = sender
+    app.config['RECEPIENT'] = recepient
+ 
+
 def MainWorkflow(file: str, riskScore: int):
     """Main workflow for processing email files.
     Calls all the necessary functions and tabulates the riskScores
@@ -78,10 +95,10 @@ def MainWorkflow(file: str, riskScore: int):
     riskScoreWhitelistDomain = riskScoreDistanceCheck = riskScoreKeyword = riskScoreURL = 0
     
     #initialize whitelisted domains
-    WhitelistedDomains = dc.LoadWhitelistedDomains("Domains/sampleWhitelistedDomains.txt")
+    whitelistedDomains = dc.LoadWhitelistedDomains("Domains/sampleWhitelistedDomains.txt")
 
     # Initialize blacklisted domains
-    BlacklistedDomains = dc.LoadBlacklistedDomains("Domains/sampleBlacklistedDomains.txt")
+    blacklistedDomains = dc.LoadBlacklistedDomains("Domains/sampleBlacklistedDomains.txt")
 
     #clean the email text and extract URLs & remove the html if neccesary
     #pe.CleanText(emailToScan)
@@ -97,34 +114,26 @@ def MainWorkflow(file: str, riskScore: int):
     plaintext = pe.GetPlainText(emailToScan)
 
     # Check the blacklist first
-    riskScoreBlacklistDomain = dc.CheckBlacklistedDomain(sender, BlacklistedDomains)
+    riskScoreBlacklistDomain = dc.CheckBlacklistedDomain(sender, blacklistedDomains)
 
     if riskScoreBlacklistDomain == 185:
         # Immediate block: set total riskScore to max and skip other checks
         riskScore = riskScoreBlacklistDomain
-
+        riskLvl = "High. Very likely to be a phishing email"
         print(f'Total Risk Score: {riskScore}')
-        app.config['RISKSCORE'] = riskScore
-        app.config['RISKLVL'] = "High. Very likely to be a phishing email"
-        app.config['RISKSCOREBL'] = riskScoreBlacklistDomain
-        app.config['RISKSCOREWD'] = riskScoreWhitelistDomain
-        app.config['RISKSCOREDC'] = riskScoreDistanceCheck
-        app.config['RISKSCOREKW'] = riskScoreKeyword
-        app.config['RISKSCOREURL'] = riskScoreURL
-        app.config['HTMLTEXT'] = htmltext
-        app.config['PLAINTEXT'] = plaintext
-        app.config['SENDER'] = sender
-        app.config['RECEPIENT'] = recepient
-        return  # STOP further code execution if blacklisted
-
+        print(f'Risk Level:{riskLvl}')
+        WebUIVariables(riskScore,riskLvl,riskScoreBlacklistDomain
+                       ,riskScoreWhitelistDomain,riskScoreDistanceCheck,riskScoreKeyword
+                       ,riskScoreURL,htmltext,plaintext,sender,recepient)
+        return
     # Only executes for NON-BLACKLISTED domains:
     # Check if the sender's domain is whitelisted and add to risk score if not
-    riskScoreWhitelistDomain = dc.CheckWhitelistedDomain(sender, riskScore, WhitelistedDomains)
+    riskScoreWhitelistDomain = dc.CheckWhitelistedDomain(sender, riskScore, whitelistedDomains)
 
     #if email fails whitelist check
     if riskScoreWhitelistDomain > 0:
         #Edit distance check 
-        riskScoreDistanceCheck = dc.check_sender_levenshtein(sender,WhitelistedDomains,riskScore) 
+        riskScoreDistanceCheck = dc.checkSenderLevenshtein(sender,whitelistedDomains,riskScore) 
         #print(riskScore)
 
     #Scans the email for suspicious words
@@ -147,19 +156,10 @@ def MainWorkflow(file: str, riskScore: int):
                     
     print(f'Total Risk Score: {riskScore}')
     print(f'Risk Level:{riskLvl}')
-
     # For Web UI visualisation
-    app.config['RISKSCORE'] = riskScore
-    app.config['RISKLVL'] = riskLvl
-    app.config['RISKSCOREBL'] = riskScoreBlacklistDomain
-    app.config['RISKSCOREWD'] = riskScoreWhitelistDomain
-    app.config['RISKSCOREDC'] = riskScoreDistanceCheck
-    app.config['RISKSCOREKW'] = riskScoreKeyword
-    app.config['RISKSCOREURL'] = riskScoreURL
-    app.config['HTMLTEXT'] = htmltext
-    app.config['PLAINTEXT'] = plaintext
-    app.config['SENDER'] = sender
-    app.config['RECEPIENT'] = recepient
+    WebUIVariables(riskScore,riskLvl,riskScoreBlacklistDomain
+                   ,riskScoreWhitelistDomain,riskScoreDistanceCheck,riskScoreKeyword
+                   ,riskScoreURL,htmltext,plaintext,sender,recepient)
 
     pass
 
@@ -197,7 +197,7 @@ if __name__=='__main__':
 
 
     #======= The code below is to be ran for a single file only =======
-    file = "TestEmails/sampleEmail2.txt"
+    file = "TestEmails/sampleEmail1.txt"
     MainWorkflow(file, riskScore)
     app.run(debug=True)
 
