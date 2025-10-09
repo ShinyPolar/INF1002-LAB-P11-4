@@ -5,67 +5,67 @@ from datetime import datetime
 from urllib.parse import urlparse
 from ParseEmail import SetBodyCleanText
 
-def extract_urls_from_text(text: str):
+def ExtractURLsFromText(text: str):
     # matches http://, https://, or www.something
-    url_pattern = r'(https?://[^\s]+|www\.[^\s]+)'
-    urls = re.findall(url_pattern, text)
+    urlPattern = r'(https?://[^\s]+|www\.[^\s]+)'
+    urls = re.findall(urlPattern, text)
     return urls
 
-def check_domain_mismatch(email_msg):
+def CheckDomainMismatch(email_msg):
     """
     Checks for mismatches between the claimed domain (in URL) and actual domain.
     Returns:
-        mismatches: list of tuples (claimed_domain, actual_domain)
-        actual_domains: list of all actual domains found
+        mismatches: list of tuples (claimedDomain, actualDomains)
+        actualDomains: list of all actual domains found
         riskScore: total risk score from domain mismatches
     """
     riskScore = 0
     mismatches = []
-    actual_domains = []
+    actualDomains = []
 
-    clean_text = SetBodyCleanText(email_msg)
-    urls = extract_urls_from_text(clean_text)
-    # Ensure clean_text is a string if it comes as a list
-    if isinstance(clean_text, list):
-        clean_text = " ".join(clean_text)
+    cleanText = SetBodyCleanText(email_msg)
+    urls = ExtractURLsFromText(cleanText)
+    # Ensure cleanText is a string if it comes as a list
+    if isinstance(cleanText, list):
+        cleanText = " ".join(cleanText)
 
     for url in urls:
         url = url.strip(' "\'<>')  # clean up any surrounding characters
 
         # Extract actual domain using tldextract
         ext = tldextract.extract(url)
-        actual_domain = f"{ext.domain}.{ext.suffix}" if ext.suffix else ext.domain
-        actual_domain = actual_domain.lower()
-        if not actual_domain:
+        actualDomain = f"{ext.domain}.{ext.suffix}" if ext.suffix else ext.domain
+        actualDomain = actualDomain.lower()
+        if not actualDomains:
             continue
-        actual_domains.append(actual_domain)
+        actualDomains.append(actualDomain)
 
         # Extract claimed domain from URL itself
         parsed = urlparse(url)
-        claimed_domain = parsed.netloc.lower().lstrip("www.")
+        claimedDomain = parsed.netloc.lower().lstrip("www.")
 
         # If claimed domain differs from actual domain, add risk
-        if claimed_domain and claimed_domain != actual_domain:
+        if claimedDomain and claimedDomain != actualDomains:
             riskScore += 15
-            mismatches.append((claimed_domain, actual_domain))
+            mismatches.append((claimedDomain, actualDomains))
 
     # Debug print
     for claimed, actual in mismatches:
         print(f"Mismatch: Claimed '{claimed}' but actually goes to '{actual}'")
 
-    return mismatches, actual_domains, riskScore
+    return mismatches, actualDomains, riskScore
 
-def get_domain_age(domains):
+def GetDomainAge(domains):
     riskScore = 0
     try:
         for domain in domains:
             w = whois.whois(domain)
-            creation_date = w.creation_date
-            if isinstance(creation_date, list):
-                creation_date = creation_date[0]
-            if creation_date:
-                age_year = (datetime.now() - creation_date).days / 365
-                if age_year < 1:
+            creationDate = w.creationDate
+            if isinstance(creationDate, list):
+                creationDate = creationDate[0]
+            if creationDate:
+                ageYear = (datetime.now() - creationDate).days / 365
+                if ageYear < 1 and ageYear == 0:
                     riskScore = 20
                     return riskScore
     except Exception as e:
@@ -73,7 +73,7 @@ def get_domain_age(domains):
     return riskScore
 
 #get domain from URL
-def get_domain(urls):
+def GetDomain(urls):
     domains = []
     for url in urls:
         netloc = urlparse(url).netloc
@@ -83,19 +83,19 @@ def get_domain(urls):
     return domains
 
 # check if URL contains an IP address
-ipadd_pattern = r'^((([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:))|(([0-9a-fA-F]{1,4}:){6}(:[0-9a-fA-F]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-fA-F]{1,4}:){5}(((:[0-9a-fA-F]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-fA-F]{1,4}:){4}(((:[0-9a-fA-F]{1,4}){1,3})|((:[0-9a-fA-F]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:){3}(((:[0-9a-fA-F]{1,4}){1,4})|((:[0-9a-fA-F]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:){2}(((:[0-9a-fA-F]{1,4}){1,5})|((:[0-9a-fA-F]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:)(((:[0-9a-fA-F]{1,4}){1,6})|((:[0-9a-fA-F]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9a-fA-F]{1,4}){1,7})|((:[0-9a-fA-F]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?$'
+ipaddPattern = r'^((([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:))|(([0-9a-fA-F]{1,4}:){6}(:[0-9a-fA-F]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-fA-F]{1,4}:){5}(((:[0-9a-fA-F]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-fA-F]{1,4}:){4}(((:[0-9a-fA-F]{1,4}){1,3})|((:[0-9a-fA-F]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:){3}(((:[0-9a-fA-F]{1,4}){1,4})|((:[0-9a-fA-F]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:){2}(((:[0-9a-fA-F]{1,4}){1,5})|((:[0-9a-fA-F]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:)(((:[0-9a-fA-F]{1,4}){1,6})|((:[0-9a-fA-F]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9a-fA-F]{1,4}){1,7})|((:[0-9a-fA-F]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?$'
 
-def url_contains_ip(urls):
+def URLContainsIP(urls):
     riskScore = 0
-    domains = get_domain(urls)
+    domains = GetDomain(urls)
     for domain in domains:
-        if re.search(ipadd_pattern, domain):
+        if re.search(ipaddPattern, domain):
             riskScore += 40
     return riskScore
 
-def lexical_features(urls): 
+def LexicalFeatures(urls): 
     riskScore = 0
-    domains = get_domain(urls)
+    domains = GetDomain(urls)
 
     for i in range(len(urls)):
         url = urls[i].strip(' "\'<>')
@@ -111,8 +111,8 @@ def lexical_features(urls):
             riskScore += 1
     return riskScore
 
-def load_blacklist():
-    file_path="/Domains/sampleBlacklistedDomains.txt"
+def LoadBlacklist():
+    file_path="Domains/sampleBlacklistedDomains.txt"
     try:
         with open(file_path, "r") as f:
             # convert all to lowercase and ignore empty lines
@@ -121,10 +121,10 @@ def load_blacklist():
         print("File not found.")
         return set()
 
-def check_blacklist(domains):
+def CheckBlacklist(domains):
     riskScore = 0
     matches = []
-    blacklist = load_blacklist()
+    blacklist = LoadBlacklist()
 
     for domain in domains:
         if domain.lower() in blacklist:
@@ -140,13 +140,12 @@ def scanURLs(urls,email_msg):
     if not urls:
             print("No URLs found.")
             return 0
-    domains = get_domain(urls)
-    mismatches, actual_domains, domain_mismatch_score = check_domain_mismatch(email_msg)
-    blacklist = load_blacklist()
-    blacklist_score, blacklisted_domains = check_blacklist(domains)
-    total_risk = 0
-    total_risk += url_contains_ip(urls) + lexical_features(urls) + domain_mismatch_score + get_domain_age(actual_domains) + blacklist_score
-    print("URL Risk Score:", total_risk)
+    domains = GetDomain(urls)
+    mismatches, actualDomains, domainMismatchScore = CheckDomainMismatch(email_msg)
+    blacklist = LoadBlacklist()
+    blacklistScore, blacklistedDomains = CheckBlacklist(domains)
+    totalRisk = 0
+    totalRisk += URLContainsIP(urls) + LexicalFeatures(urls) + domainMismatchScore + GetDomainAge(actualDomains) + blacklistScore
+    print("URL Risk Score:", totalRisk)
     print("URLs scanned:", urls)
-    return total_risk
-
+    return totalRisk
