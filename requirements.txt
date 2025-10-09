@@ -1,5 +1,5 @@
 levenshtein
 beautifulsoup4
 flask
-whois
+python-whois
 tldextract
