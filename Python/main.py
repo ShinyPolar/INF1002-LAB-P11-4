@@ -100,11 +100,13 @@ def MainWorkflow(file: str, riskScore: int):
         #print(riskScore)
 
     #Scans the email for suspicious words
-    urls = []
+    # urls = []
+    email_text = pe.GetPlainText(emailToScan)
+    urls = ud.extract_urls_from_text(email_text)
     riskScoreKeyword = se.ScanEmail(emailToScan, urls)
 
     #Scan the URLs in the email for suspicious features
-    #riskScoreURL += ud.scanURLs(urls, email_msg=emailToScan)
+    riskScoreURL = ud.scanURLs(urls, email_msg=emailToScan)
     riskScore = riskScoreDistanceCheck + riskScoreWhitelistDomain + riskScoreKeyword + riskScoreURL
 
     #Assign Severity
@@ -138,6 +140,7 @@ if __name__=='__main__':
     #Initialization
     se.SetSuspiciousWords("wordWeightage.txt")
     riskScore = 0
+    
 
     
     #======= If remove print from every function except the final riskScore, it would be cleaner ======
@@ -166,7 +169,7 @@ if __name__=='__main__':
 
 
     #======= The code below is to be ran for a single file only =======
-    file = "TestEmails/sampleEmail1.txt"
+    file = "TestEmails/sampleEmail2.txt"
     MainWorkflow(file, riskScore)
     app.run()
 

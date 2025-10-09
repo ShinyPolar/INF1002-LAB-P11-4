@@ -100,7 +100,6 @@ def SetBodyCleanText(msg: EmailMessage)->str:
     '''Extract texts from an email message, handling both plain text and HTML parts,
     then subsequently set it as the new payload of the email message.'''
     plainText = htmlText = ""
-    #urls = []
     for part in msg.walk():
         content_type = part.get_content_type()
         content_charset = part.get_content_charset()
@@ -110,12 +109,11 @@ def SetBodyCleanText(msg: EmailMessage)->str:
         if content_type == "text/html":
             htmlText = TryDecode(part.get_payload(decode=True), content_charset)
             htmlText = strip_html(htmlText)
-            #urls.extend(ud.extract_urls_from_text(html))
+            # urls.extend(ud.extract_urls_from_text(htmlText))
     
     plainText += htmlText
     cleanText = ' '.join(plainText.split())  # replace all whitespace sequences with single space
     #cleanText = cleanText.replace(". ", ".\n")  # put sentences on separate lines
-    #urls.extend(ud.extract_urls_from_text(cleanText))
     #print(cleanText)
     msg.set_payload(cleanText)
     return cleanText
