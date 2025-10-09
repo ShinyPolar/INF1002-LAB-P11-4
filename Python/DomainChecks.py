@@ -3,7 +3,7 @@ Module to check sender email domain
 
 
 '''
-from Levenshtein import distance
+from Levenshtein import distance # Using Levenshtein library
 
 def LoadWhitelistedDomains(filename: str) -> list:
     '''
@@ -46,16 +46,16 @@ def LoadBlacklistedDomains(filename: str) -> list:
     '''
     #global BlacklistedDomains
     #BlacklistedDomains.clear()  # reset before loading
-    blacklistedDomains = []
+    blacklistedDomains = [] # Initialize the list to store blacklisted domains
     try:
-        with open(filename, "r") as f:
+        with open(filename, "r") as f: # Open the file for reading
             for line in f:
-                domain = line.strip().lower()
+                domain = line.strip().lower() # Remove whitespace and convert to lowercase
                 if domain and not domain.startswith("#"):  # skip blanks & comments
-                    blacklistedDomains.append(domain)
-    except FileNotFoundError:
+                    blacklistedDomains.append(domain) # Add valid domains to the list
+    except FileNotFoundError: # Handle file not found error
         print(f"Blacklist file '{filename}' not found.")
-    except Exception as e:
+    except Exception as e: # Handle other exceptions
         print(f"Error reading blacklist file: {e}")
 
     # print(BlacklistedDomains)
@@ -69,7 +69,7 @@ def CheckWhitelistedDomain(emailadd,riskScore,whitelistedDomains):
     - If not whitelisted: add a penalty to the riskScore.
     
     Args:
-        email: email address
+        emailadd: email address
         riskScore: The current risk Score
         WhitelistedDomains: List containing Whitelisted Domain names
     '''
@@ -105,7 +105,7 @@ def CheckBlacklistedDomain(emailadd, blacklistedDomains):
     - If not blacklisted: return zero as no risk added by blacklist check.
     
     Args:
-        emailadd: sender email address
+        emailadd: sender's email address
         BlacklistedDomains: List containing Blacklisted Domain names
     
     Returns:
@@ -116,14 +116,14 @@ def CheckBlacklistedDomain(emailadd, blacklistedDomains):
 
     if not emailadd:  # if no sender email address is provided, mark as suspicious and block
         print(f"Suspicious email: invalid sender '{emailadd}'")
-        return maxRisk
+        return maxRisk # immediately block by returning max risk score
 
     elif "@" not in emailadd:  # if the sender email does not contain '@', mark as suspicious and block
         print(f"Suspicious email: sender email address '{emailadd}' does not contain '@'")
-        return maxRisk
+        return maxRisk # immediately block by returning max risk score
 
     # splits the email address into username and domain name, converts domain to lowercase for consistent comparison
-    domain = emailadd.split("@")[-1].lower() 
+    domain = emailadd.split("@")[-1].lower()
 
     # check if the extracted domain is in the blacklist
     if domain in blacklistedDomains:
@@ -135,23 +135,30 @@ def CheckBlacklistedDomain(emailadd, blacklistedDomains):
 
 # edit distance check
 def levenshtein(source: str, target: str) -> int:
-    """
-    This function is to compute the Levenshtein distance between two strings.
+    '''
+    Compute the Levenshtein distance between two strings.
+    - The distance is the minimum number of insertions, deletions, 
+      or substitutions required to transform one string into the other.
+    - Used for detecting visual similarity between domains in phishing detection.
 
-    The distance is the minimum number of insertions, deletions, 
-    or substitutions required to transform source to target.
-    """
+    Args:
+        source: The first string to compare
+        target: The second string to compare
 
-    source = source.lower()
-    target = target.lower()
+    Returns:
+        Integer distance value (0 if identical, higher values indicate greater difference)
+    '''
+
+    source = source.lower() # Convert both strings to lowercase for case-insensitive comparison
+    target = target.lower() # Convert both strings to lowercase for case-insensitive comparison
 
     # Ensure source is the longer string (for memory efficiency)
-    if len(source) < len(target):
-        return levenshtein(target, source)
+    if len(source) < len(target): # Swap if source is shorter than target
+        return levenshtein(target, source) # Recursive call with swapped arguments
 
     # If target is empty, distance = remove all chars from source
     if len(target) == 0:
-        return len(source)
+        return len(source) # Distance is the length of source (all deletions)
 
     # prev_distances[j] = distance between:
     # first i-1 chars of source  and  first j chars of target
@@ -160,7 +167,7 @@ def levenshtein(source: str, target: str) -> int:
     # Loop through each character in the source string
     for srcIndex, srcChar in enumerate(source):
         # curr_distances[j] = distance between:
-        #   first i chars of source  and  first j chars of target
+        # first i chars of source  and  first j chars of target
         # Start with cost of deleting all chars up to src_index
         currDistances = [srcIndex + 1]
 
@@ -186,26 +193,28 @@ def levenshtein(source: str, target: str) -> int:
 
 def checkSenderLevenshtein(sender:str, whiteList:list, riskScore:int):
     '''
-    Check if the sender's email domain is visually similar to the domains in the whitelist.
-    - If visually similar: add a penalty to the riskScore
-    - If not visually similar: returns original riskScore.
-    
+    Check if the sender's email domain is visually similar to any whitelisted domain.
+    - If similarity is detected (edit distance ≤ threshold): add penalty to riskScore.
+    - If no similarity is detected: return original riskScore unchanged.
+
     Args:
-        sender: email address
-        whitelist: List containing Whitelisted Domain names
-        riskScore: The current risk Score
+        sender: Sender's email address
+        whiteList: List containing whitelisted domain names
+        riskScore: Current accumulated risk score
+
+    Returns:
+        Integer risk score (increased if sender is suspiciously similar to whitelist, else unchanged)
     '''
+    
     for w in whiteList:
         #print(f'sender:{sender},whitelisted email:{w}')
-        distance = levenshtein(sender,w)
+        distance = levenshtein(sender,w) # using custom levenshtein function to compute edit distance
         
         #print(f"levenshtein distance:{distance}")
-        if distance <= 2:
-            print(f"Sender email {sender} is similar to {w} as levenshtein distance is {distance}.")
-            riskScore += 30
-            return riskScore
+        if distance <= 2: # threshold for flagging as suspicious (allowing for minor typos)
+            print(f"Sender email {sender} is similar to {w} as levenshtein distance is {distance}.") # flag as suspicious and add penalty to risk score
+            riskScore += 30 # penalty for failing edit distance check
+            return riskScore # return updated risk score if sender email is similar to any whitelisted domains
 
     print("Sender email passed edit distance check")
-    return riskScore
-
-
+    return riskScore # return original risk score if sender email is not similar to any whitelisted domains

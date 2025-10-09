@@ -1,0 +1,6 @@
+From: "Test Blacklist" <user@addr.com>
+Subject: Act Now—Update Your Account
+
+Dear user,
+This is an urgent security notice. Please click the link below to update your account information and withdraw your funds!
+http://badlink.com/phishing
