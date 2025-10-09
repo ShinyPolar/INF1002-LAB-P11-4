@@ -149,8 +149,9 @@ def levenshtein(source: str, target: str) -> int:
         Integer distance value (0 if identical, higher values indicate greater difference)
     '''
 
-    source = source.lower() # Convert both strings to lowercase for case-insensitive comparison
-    target = target.lower() # Convert both strings to lowercase for case-insensitive comparison
+    # Convert both strings to lowercase for case-insensitive comparison
+    source = source.lower()
+    target = target.lower()
 
     # Ensure source is the longer string (for memory efficiency)
     if len(source) < len(target): # Swap if source is shorter than target
