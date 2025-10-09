@@ -112,13 +112,14 @@ def ScanBody(email: mailbox.mboxMessage):
 def SetSuspiciousWords(file: str):
     '''Set the dictionary of suspicious words
     '''
-    global suspiciouswords
-    textfile = open(os.path.join("Lists", file), "r")
-    for line in textfile:
-        word, weightage = line.split(": ")
-        word = word.strip()
-        weightage = float(weightage.strip())
-        suspiciousWords[word] = weightage
-    textfile.close()
+    global suspiciousWords
+    filepath = os.path.join("Lists", file)
+    with open(filepath, "r", encoding="latin-1") as textfile:
+        for line in textfile:
+            word, weightage = line.split(": ")
+            word = word.strip()
+            weightage = float(weightage.strip())
+            suspiciousWords[word] = weightage
+        textfile.close()
     pass
 
