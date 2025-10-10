@@ -92,7 +92,7 @@ def CheckBlacklistedDomain(emailAdd, blacklistedDomains):
         /incomplete sender email, else 0
     '''
 
-    maxRisk = 125  # defining the maximum risk score for a blacklisted domain, indicating a block
+    maxRisk = 110  # defining the maximum risk score for a blacklisted domain, indicating a block
 
     #check for presence of email address and assign max risk score if email address is not found/incomplete
     if CheckSender(emailAdd) == False:
