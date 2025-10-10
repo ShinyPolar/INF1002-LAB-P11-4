@@ -47,7 +47,6 @@ def CheckDomainMismatch(email_msg):
 
         # If claimed domain differs from actual domain, add risk
         if claimedDomain and claimedDomain != actualDomain:
-            #riskScore += 35
             count+=1
             mismatches.append((claimedDomain, actualDomain))
     
@@ -96,10 +95,9 @@ def URLContainsIP(urls):
     domains = GetDomain(urls)
     for domain in domains:
         if re.search(ipaddPattern, domain):
-            #riskScore += 40
             count+=1
     if count>=1:
-        return riskScore+40
+        riskScore+=40
     return riskScore
 
 # Checks the structure of the URL for suspicious traits
@@ -113,19 +111,15 @@ def LexicalFeatures(urls):
         domain = domains[i]
 
         if len(url) > 75: 
-            #riskScore += 15
             count+=1
         if "@" in url: 
-            riskScore += 15
             count+=1
         if "-" in domain: 
-            #riskScore += 15
             count+=1
         if domain.count('.') > 3: 
-            riskScore += 15
             count+=1
     if count>=1:
-        return riskScore+15
+        riskScore+=15
     return riskScore
 
 # Scan URLs and calculate risk score
