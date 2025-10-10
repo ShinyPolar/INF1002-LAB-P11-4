@@ -62,7 +62,7 @@ def CheckWhitelistedDomain(emailadd,riskScore,whitelistedDomains):
         riskScore: Adds an integer value of 20 if not whitelisted, 0 if whitelisted
     '''
 
-    penalty = 40 #defining the penalty for failing the Domain Whitelist Check
+    penalty = 20 #defining the penalty for failing the Domain Whitelist Check
 
     #splits the email address into username and domain name, converts the domain name to lowercase and assign domain name to variable
     domain = emailadd.split("@")[-1].lower() 
@@ -92,7 +92,7 @@ def CheckBlacklistedDomain(emailAdd, blacklistedDomains):
         /incomplete sender email, else 0
     '''
 
-    maxRisk = 145  # defining the maximum risk score for a blacklisted domain, indicating a block
+    maxRisk = 125  # defining the maximum risk score for a blacklisted domain, indicating a block
 
     #check for presence of email address and assign max risk score if email address is not found/incomplete
     if CheckSender(emailAdd) == False:
