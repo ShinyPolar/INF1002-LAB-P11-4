@@ -40,9 +40,9 @@ def LoadDomains(filename: str) -> list:
                 if domain and not domain.startswith("#"):  # skip blanks & comments
                     domains.add(domain)
     except FileNotFoundError:
-        print(f"Whitelist file '{filename}' not found.")
+        print(f"Whitelist file or Blacklist file '{filename}' not found.")
     except Exception as e:
-        print(f"Error reading whitelist file: {e}")
+        print(f"Error reading whitelist or blacklist file: {e}")
 
     return domains
 
@@ -169,6 +169,7 @@ def CheckSenderLevenshtein(sender:str, whiteList:list, riskScore:int):
         riskScore: Current accumulated risk score
 
     Returns:
+        riskScore: integer value of 20 if sender's email domain is suspiciously similar to whitelist, else 0
         riskScore: integer value of 20 if sender's email domain is suspiciously similar to whitelist, else 0
     '''
     domain = sender.split("@")[-1].lower()
