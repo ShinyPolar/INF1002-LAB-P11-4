@@ -134,7 +134,12 @@ def MainWorkflow(file: str, riskScore: int):
     plaintext = pe.GetPlainText(emailToScan)
 
     # Check the blacklist first
-    riskScoreBlacklistDomain = dc.CheckBlacklistedDomain(sender, blacklistedDomains)
+    riskScoreBlacklistDomain = 0
+    if dc.CheckDomain(sender,blacklistedDomains) == True:
+        print(f"Blocked email: sender domain '{sender}' is in blacklist.")
+        riskScoreBlacklistDomain += 110
+    else:
+        print(f"Sender domain '{sender}' is not in blacklist.")
 
     if riskScoreBlacklistDomain == 110:
         # Immediate block: set total riskScore to max and skip other checks
@@ -149,7 +154,12 @@ def MainWorkflow(file: str, riskScore: int):
         return 
     # Only executes for NON-BLACKLISTED domains:
     # Check if the sender's domain is whitelisted and add to risk score if not
-    riskScoreWhitelistDomain = dc.CheckWhitelistedDomain(sender, riskScore, whitelistedDomains)
+    riskScoreWhitelistDomain = 0
+    if dc.CheckDomain(sender, whitelistedDomains) == False:
+        print(f'\nSuspicious email detected. Sender email address ({sender}) is not whitelisted')
+        riskScoreWhitelistDomain += 20
+    else:
+        print(f'\nSender email address ({sender}) is whitelisted')
 
     #if email fails whitelist check
     if riskScoreWhitelistDomain > 0:
@@ -191,7 +201,7 @@ if __name__=='__main__':
     riskScore = 0
     
     #======= The code below is to be ran for a single file only =======
-    file = "TestCases/testEmail5_phishing.txt"
+    file = "TestCases/testEmail4_edgecase.txt"
     MainWorkflow(file, riskScore)
     app.run(debug=True)
     

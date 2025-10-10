@@ -47,67 +47,33 @@ def LoadDomains(filename: str) -> list:
     return domains
 
 
-def CheckWhitelistedDomain(emailadd,riskScore,whitelistedDomains):
+def CheckDomain(emailAdd,domains):
     '''
-    Check if the sender's email domain is in the whitelist.
-    - If whitelisted: return the same riskScore.
-    - If not whitelisted: add a penalty to the riskScore.
+    Check if the sender's email domain is in the list provided.
+    - If in list: return True.
+    - If not in list: return False.
     
     Args:
-        emailadd: email address
-        riskScore: The current risk Score
-        WhitelistedDomains: List containing Whitelisted Domain names
+        emailAdd: email address
+        domains: List containing Whitelisted/Blacklisted Domain names
 
     Returns:
-        riskScore: Adds an integer value of 20 if not whitelisted, 0 if whitelisted
+        True/False (Boolean): True if found, False if not found
     '''
 
     penalty = 20 #defining the penalty for failing the Domain Whitelist Check
 
-    #splits the email address into username and domain name, converts the domain name to lowercase and assign domain name to variable
-    domain = emailadd.split("@")[-1].lower() 
-    
-    #checks if domain name is in whitelist
-    if domain not in [d.lower() for d in whitelistedDomains]:
-        print(f'\nSuspicious email detected. Sender email address ({emailadd}) is not whitelisted')
-        riskScore+=penalty
-        return riskScore
-    else:
-        #Does not add to risk score if sender email address is whitelisted
-        print(f'\nSender email address ({emailadd}) is whitelisted')
-        return riskScore
-
-def CheckBlacklistedDomain(emailAdd, blacklistedDomains):
-    '''
-    Check if the sender's email domain is in the blacklist.
-    - If blacklisted: return maximum risk score indicating an immediate block.
-    - If not blacklisted: return zero as no risk added by blacklist check.
-    
-    Args:
-        emailadd: sender's email address
-        BlacklistedDomains: List containing Blacklisted Domain names
-    
-    Returns:
-        riskScore: max integer risk score (185) if domain is blacklisted/no sender
-        /incomplete sender email, else 0
-    '''
-
-    maxRisk = 110  # defining the maximum risk score for a blacklisted domain, indicating a block
-
-    #check for presence of email address and assign max risk score if email address is not found/incomplete
     if CheckSender(emailAdd) == False:
-        return maxRisk
+        return False
+    #splits the email address into username and domain name, converts the domain name to lowercase and assign domain name to variable
+    domain = emailAdd.split("@")[-1].lower() 
     
-    # splits the email address into username and domain name, converts domain to lowercase for consistent comparison
-    domain = emailAdd.split("@")[-1].lower()
-
-    # check if the extracted domain is in the blacklist
-    if domain in blacklistedDomains:
-        print(f"Blocked email: sender domain '{domain}' is in blacklist.")
-        return maxRisk  # immediately block by returning max risk score
-
-    # if domain is not blacklisted, return 0 indicating no blacklist risk
-    return 0
+    #checks if domain name is not in list
+    if domain not in [d.lower() for d in domains]:
+        return False
+    else:
+        #Does not add to risk score if sender email address is in list
+        return True
 
 def CheckSender(emailAdd:str):
     """
@@ -203,14 +169,11 @@ def CheckSenderLevenshtein(sender:str, whiteList:list, riskScore:int):
         riskScore: Current accumulated risk score
 
     Returns:
-        riskScore: integer value of 30 if sender's email domain is suspiciously similar to whitelist, else 0
+        riskScore: integer value of 20 if sender's email domain is suspiciously similar to whitelist, else 0
     '''
-    
+    domain = sender.split("@")[-1].lower()
     for w in whiteList:
-        #print(f'sender:{sender},whitelisted email:{w}')
-        distance = Levenshtein(sender,w) # using custom levenshtein function to compute edit distance
-        
-        #print(f"levenshtein distance:{distance}")
+        distance = Levenshtein(domain,w) # using custom levenshtein function to compute edit distance
         if distance <= 2: # threshold for flagging as suspicious (allowing for minor typos)
             print(f"Sender email {sender} is similar to {w} as levenshtein distance is {distance}.") # flag as suspicious and add penalty to risk score
             riskScore += 20 # penalty for failing edit distance check
