@@ -64,7 +64,27 @@ def WebUIVariables(riskScore:int, riskLvl:str, riskScoreBlacklistDomain:int,
                    riskScoreKeyword:int, riskScoreURL:int, htmltext:str,
                    plaintext:str, sender:str, recepient:str):
     """
-    Function to display value of variables onto web UI
+    Populate web UI configuration variables with risk analysis results.
+
+    This function updates the Flask 'app.config' dictionary with values
+    related to email risk scoring and message content. These values are
+    then available for rendering in the web interface.
+
+    Args:
+        riskScore (int): Overall computed risk score for the email.
+        riskLvl (str): Risk level classification (e.g., "Low", "Medium", "High").
+        riskScoreBlacklistDomain (int): Score contribution from blacklist domain checks.
+        riskScoreWhitelistDomain (int): Score contribution from whitelist domain checks.
+        riskScoreDistanceCheck (int): Score contribution from domain distance/similarity checks.
+        riskScoreKeyword (int): Score contribution from suspicious keyword detection.
+        riskScoreURL (int): Score contribution from URL analysis.
+        htmltext (str): Raw HTML body of the email.
+        plaintext (str): Plain text body of the email.
+        sender (str): Email address of the sender.
+        recepient (str): Email address of the recipient.
+
+    Returns:
+        None: The function updates 'app.config' in place.
     """
     app.config['RISKSCORE'] = riskScore
     app.config['RISKLVL'] = riskLvl
@@ -98,10 +118,10 @@ def MainWorkflow(file: str, riskScore: int):
     riskScoreWhitelistDomain = riskScoreDistanceCheck = riskScoreKeyword = riskScoreURL = 0
     
     #initialize whitelisted domains
-    whitelistedDomains = dc.LoadWhitelistedDomains("Domains/sampleWhitelistedDomains.txt")
+    whitelistedDomains = dc.LoadDomains("Domains/sampleWhitelistedDomains.txt")
 
     # Initialize blacklisted domains
-    blacklistedDomains = dc.LoadBlacklistedDomains("Domains/sampleBlacklistedDomains.txt")
+    blacklistedDomains = dc.LoadDomains("Domains/sampleBlacklistedDomains.txt")
 
     #clean the email text and extract URLs & remove the html if neccesary
     #pe.CleanText(emailToScan)
