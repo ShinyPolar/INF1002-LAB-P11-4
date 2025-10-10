@@ -487,6 +487,7 @@ service184249240.chase.com
 services.com
 servidor.oligapi
 sesmail.com
+sfr.fr
 si-usa.com
 sify.com
 simhope.com.tw

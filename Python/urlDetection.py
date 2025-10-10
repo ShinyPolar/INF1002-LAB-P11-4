@@ -21,6 +21,7 @@ def CheckDomainMismatch(email_msg):
         riskScore: total risk score from domain mismatches
     """
     riskScore = 0
+    count = 0
     mismatches = []
     actualDomains = []
 
@@ -46,8 +47,12 @@ def CheckDomainMismatch(email_msg):
 
         # If claimed domain differs from actual domain, add risk
         if claimedDomain and claimedDomain != actualDomain:
-            riskScore += 35
+            #riskScore += 35
+            count+=1
             mismatches.append((claimedDomain, actualDomain))
+    
+    if count>=1:
+        riskScore+=35
 
     # Debug print
     for claimed, actual in mismatches:
@@ -87,15 +92,20 @@ def GetDomain(urls):
 def URLContainsIP(urls): 
     ipaddPattern = r'((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:))|(([0-9a-fA-F]{1,4}:){6}(:[0-9a-fA-F]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-fA-F]{1,4}:){5}(((:[0-9a-fA-F]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-fA-F]{1,4}:){4}(((:[0-9a-fA-F]{1,4}){1,3})|((:[0-9a-fA-F]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:){3}(((:[0-9a-fA-F]{1,4}){1,4})|((:[0-9a-fA-F]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:){2}(((:[0-9a-fA-F]{1,4}){1,5})|((:[0-9a-fA-F]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:)(((:[0-9a-fA-F]{1,4}){1,6})|((:[0-9a-fA-F]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9a-fA-F]{1,4}){1,7})|((:[0-9a-fA-F]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))'
     riskScore = 0
+    count = 0
     domains = GetDomain(urls)
     for domain in domains:
         if re.search(ipaddPattern, domain):
-            riskScore += 40
+            #riskScore += 40
+            count+=1
+    if count>=1:
+        return riskScore+40
     return riskScore
 
 # Checks the structure of the URL for suspicious traits
 def LexicalFeatures(urls): 
     riskScore = 0
+    count = 0
     domains = GetDomain(urls)
 
     for i in range(len(urls)):
@@ -103,13 +113,19 @@ def LexicalFeatures(urls):
         domain = domains[i]
 
         if len(url) > 75: 
-            riskScore += 15
+            #riskScore += 15
+            count+=1
         if "@" in url: 
             riskScore += 15
+            count+=1
         if "-" in domain: 
-            riskScore += 15
+            #riskScore += 15
+            count+=1
         if domain.count('.') > 3: 
             riskScore += 15
+            count+=1
+    if count>=1:
+        return riskScore+15
     return riskScore
 
 # Scan URLs and calculate risk score
