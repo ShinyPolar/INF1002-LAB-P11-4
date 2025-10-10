@@ -5,61 +5,33 @@ Module to check sender email domain
 '''
 from Levenshtein import distance # Using Levenshtein library
 
-def LoadWhitelistedDomains(filename: str) -> list:
+def LoadDomains(filename: str) -> list:
     '''
-    Reads a text file containing whitelisted domains (one per line)
-    and stores them in the global WhitelistedDomains list.
+    Loads a list of domains from a text file.
+
+    This function reads a text file where each line represents a domain
+    to be whitelisted/blacklisted. Lines that are empty or start with '#' are ignored.
+    Domains are normalized to lowercase before being added to the list.
 
     Args:
-        filename: path to the text file
+        filename (str): Path to the text file containing whitelisted/blacklisted domains
 
     Returns:
-        List whitelistedDomains
+        list: A list of whitelisted/blacklisted domain strings
     '''
-    #global WhitelistedDomains
-    #WhitelistedDomains.clear()  # reset before loading
-    whitelistedDomains = []
+    domains = []
     try:
         with open(filename, "r") as f:
             for line in f:
                 domain = line.strip().lower()
                 if domain and not domain.startswith("#"):  # skip blanks & comments
-                    whitelistedDomains.append(domain)
+                    domains.append(domain)
     except FileNotFoundError:
         print(f"Whitelist file '{filename}' not found.")
     except Exception as e:
         print(f"Error reading whitelist file: {e}")
 
-    # print(WhitelistedDomains)
-    return whitelistedDomains
-
-def LoadBlacklistedDomains(filename: str) -> list:
-    '''
-    Reads a text file containing blacklisted domains (one per line)
-    and stores them in the global BlacklistedDomains list.
-
-    Args:
-        filename: path to the text file
-
-    Returns:
-        List blacklistedDomains
-    '''
-    #global BlacklistedDomains
-    #BlacklistedDomains.clear()  # reset before loading
-    blacklistedDomains = [] # Initialize the list to store blacklisted domains
-    try:
-        with open(filename, "r") as f: # Open the file for reading
-            for line in f:
-                domain = line.strip().lower() # Remove whitespace and convert to lowercase
-                if domain and not domain.startswith("#"):  # skip blanks & comments
-                    blacklistedDomains.append(domain) # Add valid domains to the list
-    except FileNotFoundError: # Handle file not found error
-        print(f"Blacklist file '{filename}' not found.")
-    except Exception as e: # Handle other exceptions
-        print(f"Error reading blacklist file: {e}")
-
-    # print(BlacklistedDomains)
-    return blacklistedDomains
+    return domains
 
 
 def CheckWhitelistedDomain(emailadd,riskScore,whitelistedDomains):
@@ -74,7 +46,7 @@ def CheckWhitelistedDomain(emailadd,riskScore,whitelistedDomains):
         WhitelistedDomains: List containing Whitelisted Domain names
 
     Returns:
-        Integer Risk Score (0 if whitelisted, 20 if not)
+        riskScore: Integer value of 0 if whitelisted, 20 if not
     '''
 
     penalty = 20 #defining the penalty for failing the Domain Whitelist Check
@@ -112,7 +84,7 @@ def CheckBlacklistedDomain(emailadd, blacklistedDomains):
         BlacklistedDomains: List containing Blacklisted Domain names
     
     Returns:
-        Integer risk score (max risk for blacklist hit, else 0)
+        riskScore: max integer risk score (185) if domain is blacklisted, else 0
     '''
 
     maxRisk = 185  # defining the maximum risk score for a blacklisted domain, indicating a block
@@ -149,7 +121,7 @@ def levenshtein(source: str, target: str) -> int:
         target: The second string to compare
 
     Returns:
-        Integer distance value (0 if identical, higher values indicate greater difference)
+        distance value: integer value of 0 if identical, higher values indicate greater difference
     '''
 
     # Convert both strings to lowercase for case-insensitive comparison
@@ -190,10 +162,10 @@ def levenshtein(source: str, target: str) -> int:
             currDistances.append(min(insertCost, deleteCost, substituteCost))
 
         # Move to the next row
-        prev_distances = currDistances
+        prevDistances = currDistances
 
     # The last cell = distance between full source and full target
-    return prev_distances[-1]
+    return prevDistances[-1]
 
 def checkSenderLevenshtein(sender:str, whiteList:list, riskScore:int):
     '''
@@ -207,7 +179,7 @@ def checkSenderLevenshtein(sender:str, whiteList:list, riskScore:int):
         riskScore: Current accumulated risk score
 
     Returns:
-        Integer risk score (increased if sender is suspiciously similar to whitelist, else unchanged)
+        riskScore: integer value of 30 if sender's email domain is suspiciously similar to whitelist, else 0
     '''
     
     for w in whiteList:
