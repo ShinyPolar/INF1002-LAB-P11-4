@@ -19,13 +19,13 @@ def LoadDomains(filename: str) -> list:
     Returns:
         list: A list of whitelisted/blacklisted domain strings
     '''
-    domains = []
+    domains = set()
     try:
         with open(filename, "r") as f:
             for line in f:
                 domain = line.strip().lower()
                 if domain and not domain.startswith("#"):  # skip blanks & comments
-                    domains.append(domain)
+                    domains.add(domain)
     except FileNotFoundError:
         print(f"Whitelist file '{filename}' not found.")
     except Exception as e:
