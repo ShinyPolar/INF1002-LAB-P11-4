@@ -17,7 +17,6 @@ to provide a reliable and structured way to process email messages for analysis.
 '''
 
 import mailbox
-from email import message_from_file
 from email.message import EmailMessage
 from email.utils import parseaddr
 
@@ -55,7 +54,7 @@ class HTMLStripper(HTMLParser):
         """
         return ''.join(self.data)
 
-def strip_html(html):
+def StripHTML(html):
     """
     Removes HTML tags from a given string of HTML.
 
@@ -69,7 +68,7 @@ def strip_html(html):
     s.feed(html)
     return s.get_data()
 
-def detect_email_filetype(filepath: str) -> str:
+def DetectEmailFiletype(filepath: str) -> str:
     """
     Determine whether an email file is in mbox or eml format.
 
@@ -186,7 +185,7 @@ def TryDecode(decodeText:str, charset):
 
 def SetBodyCleanText(msg: EmailMessage)->str:
     """
-    Extracts, cleans, and sets the plain text body of an email message.
+    Extracts, cleans, and sets the plain text body as well as the html body of an email message.
 
     This function walks through all parts of an email message, extracts both
     'text/plain' and 'text/html' content, strips HTML tags from the latter,
@@ -208,13 +207,11 @@ def SetBodyCleanText(msg: EmailMessage)->str:
             plainText = TryDecode(part.get_payload(decode=True), content_charset)
         if content_type == "text/html":
             htmlText = TryDecode(part.get_payload(decode=True), content_charset)
-            htmlText = strip_html(htmlText)
-            # urls.extend(ud.extract_urls_from_text(htmlText))
+            htmlText = StripHTML(htmlText)
     
     plainText += htmlText
-    cleanText = ' '.join(plainText.split())  # replace all whitespace sequences with single space
-    #cleanText = cleanText.replace(". ", ".\n")  # put sentences on separate lines
-    #print(cleanText)
+    # replace all whitespace sequences with single space
+    cleanText = ' '.join(plainText.split())  
     msg.set_payload(cleanText)
     return cleanText
 
@@ -285,15 +282,14 @@ def GetCleanHTMLText(msg: EmailMessage)->str:
         for part in msg.walk():
             if part.get_content_type() == "text/html":
                 cleanHTMLText = TryDecode(part.get_payload(decode=True), part.get_content_charset())
-                cleanHTMLText = strip_html(cleanHTMLText)
+                cleanHTMLText = StripHTML(cleanHTMLText)
     elif msg.get_content_type() == "text/html":
         cleanHTMLText = msg.get_payload()
-        cleanHTMLText = strip_html(cleanHTMLText)
+        cleanHTMLText = StripHTML(cleanHTMLText)
     else:
         cleanHTMLText = ""
     return cleanHTMLText
 
-    return
 def GetSender(email)->str:
     """
     Extract Sender from the email.
