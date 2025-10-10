@@ -1,5 +1,0 @@
-levenshtein
-beautifulsoup4
-flask
-python-whois
-tldextract
