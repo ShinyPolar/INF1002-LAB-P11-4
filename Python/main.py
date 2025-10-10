@@ -107,7 +107,6 @@ def MainWorkflow(file: str, riskScore: int):
     filetype = pe.detect_email_filetype(file) #checks if email is .mbox or .eml
     if filetype == "mbox":
         emailToScan = pe.ParseSingleMbox(file)   #parse the sampleEmail to readable status for mbox files
-        #PrintMultiPartMBox(emailToScan)
     elif filetype == "eml":
         emailToScan = pe.ParseSingleEML(file)    #parse the sampleEmail to readable status for eml files
     else:
@@ -118,13 +117,10 @@ def MainWorkflow(file: str, riskScore: int):
     riskScoreWhitelistDomain = riskScoreDistanceCheck = riskScoreKeyword = riskScoreURL = 0
     
     #initialize whitelisted domains
-    whitelistedDomains = dc.LoadDomains("Domains/sampleWhitelistedDomains.txt")
+    whitelistedDomains = dc.LoadDomains("Domains/whitelistedDomains.txt")
 
     # Initialize blacklisted domains
-    blacklistedDomains = dc.LoadDomains("Domains/sampleBlacklistedDomains.txt")
-
-    #clean the email text and extract URLs & remove the html if neccesary
-    #pe.CleanText(emailToScan)
+    blacklistedDomains = dc.LoadDomains("Domains/blacklistedDomains.txt")
 
     #gets sender email address from the "from" header in the email
     sender = pe.GetSender(emailToScan)
@@ -161,7 +157,7 @@ def MainWorkflow(file: str, riskScore: int):
         #print(riskScore)
 
     #Scans the email for suspicious words
-    # urls = []
+
     email_text = pe.GetPlainText(emailToScan)
     urls = ud.ExtractURLsFromText(email_text)
     riskScoreKeyword = se.ScanEmail(emailToScan, urls)
@@ -194,7 +190,10 @@ if __name__=='__main__':
     se.SetSuspiciousWords("wordWeightage.txt")
     riskScore = 0
     
-
+    #======= The code below is to be ran for a single file only =======
+    file = "TestCases/testEmail5_phishing.txt"
+    MainWorkflow(file, riskScore)
+    app.run(debug=True)
     
     #======= If remove print from every function except the final riskScore, it would be cleaner ======
     #======= If possible, make a print function for each module so that it                  ===========
@@ -219,10 +218,4 @@ if __name__=='__main__':
     #     print(file)
     #     MainWorkflow(file, riskScore)
     #     print("\n\n")
-
-
-    #======= The code below is to be ran for a single file only =======
-    file = "TestEmails/sampleEmail1.txt"
-    MainWorkflow(file, riskScore)
-    app.run(debug=True)
 
