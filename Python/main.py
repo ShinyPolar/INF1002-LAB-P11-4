@@ -133,9 +133,9 @@ def MainWorkflow(file: str, riskScore: int):
     htmltext = pe.GetHTMLText(emailToScan)
     plaintext = pe.GetPlainText(emailToScan)
 
-    # Check the blacklist first
+    # Check the blacklist first & check for presence of sender
     riskScoreBlacklistDomain = 0
-    if dc.CheckDomain(sender,blacklistedDomains) == True:
+    if dc.CheckDomain(sender,blacklistedDomains) == True or dc.CheckSender(sender) == False:
         print(f"Blocked email: sender domain '{sender}' is in blacklist.")
         riskScoreBlacklistDomain += 110
     else:

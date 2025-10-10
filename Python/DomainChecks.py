@@ -58,11 +58,6 @@ def CheckDomain(emailAdd,domains):
     Returns:
         True/False (Boolean): True if found, False if not found
     '''
-
-    penalty = 20 #defining the penalty for failing the Domain Whitelist Check
-
-    if CheckSender(emailAdd) == False:
-        return False
     #splits the email address into username and domain name, converts the domain name to lowercase and assign domain name to variable
     domain = emailAdd.split("@")[-1].lower() 
     
