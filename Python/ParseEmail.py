@@ -29,8 +29,14 @@ def strip_html(html):
 
 def detect_email_filetype(filepath: str) -> str:
     """
-    Detect whether a file is in mbox or eml format.
-    Returns: "mbox", "eml", or "unknown"
+    Checks the first line of the email message header
+    to determine whether a file is in mbox or eml format for parsing
+
+    Args:
+        String filepath
+
+    Returns: 
+        String "mbox", "eml", or "unknown"
     """
     with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
         for line in f:
@@ -51,7 +57,8 @@ def detect_email_filetype(filepath: str) -> str:
     return "unknown"
 
 def ParseMBox(path: str):
-    '''Parse the mbox file and return a list of email messages
+    '''
+    Parse the mbox file and return a list of email messages
     '''
     mbox = mailbox.mbox(path)
     phishing_mailList = [message for message in mbox] 
@@ -64,14 +71,29 @@ def ParseMBox(path: str):
     return phishing_mailList
 
 def ParseSingleMbox(path: str):
-    '''Parse a single mbox file and return the email message
+    '''
+    Parse a single mbox file and return the email message
+
+    Args:
+
     '''
     mbox = mailbox.mbox(path)
     return mbox[0] #return the first email in the mbox file
 
 def ParseSingleEML(path: str):
     """
-    Parse a single .eml file and return an EmailMessage object.
+    Parse a single `.eml` file and return it as an EmailMessage object.
+
+    This function reads the raw contents of an email file in RFC 822 format
+    and parses it into a structured 'EmailMessage' object using the
+    'email.parser.BytesParser' with the default policy.
+
+    Args:
+        path (str): The filesystem path to the '.eml' file to be parsed.
+
+    Returns:
+        EmailMessage: A parsed email message object containing headers,
+        body, and attachments (if any).
     """
     with open(path, "rb") as f:
         msg = BytesParser(policy=policy.default).parse(f)
