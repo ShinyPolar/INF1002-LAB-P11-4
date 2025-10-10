@@ -9,8 +9,7 @@ format validity, and detecting potentially malicious, visually similar domains
 
 Key functionalities include:
 - Loading whitelisted and blacklisted domains from external files.
-- Checking if a sender's domain is explicitly whitelisted.
-- Checking if a sender's domain is explicitly blacklisted.
+- Checking if a sender's domain is explicitly whitelisted/blacklisted.
 - Validating the basic structure of the sender's email address.
 - Calculating the Levenshtein distance to find domains that are suspiciously
   similar to whitelisted domains.
