@@ -46,7 +46,7 @@ def CheckDomainMismatch(email_msg):
 
         # If claimed domain differs from actual domain, add risk
         if claimedDomain and claimedDomain != actualDomains:
-            riskScore += 15
+            riskScore += 35
             mismatches.append((claimedDomain, actualDomains))
 
     # Debug print
@@ -104,17 +104,17 @@ def LexicalFeatures(urls):
         domain = domains[i]
 
         if len(url) > 75: 
-            riskScore += 2
+            riskScore += 15
         if "@" in url: 
-            riskScore += 1
+            riskScore += 15
         if "-" in domain: 
-            riskScore += 1
+            riskScore += 15
         if domain.count('.') > 3: 
-            riskScore += 1
+            riskScore += 15
     return riskScore
 
 # Scan URLs and calculate risk score
-def scanURLs(urls,email_msg):
+def ScanURLs(urls,email_msg):
     if not urls:
             print("No URLs found.")
             return 0

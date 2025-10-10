@@ -143,7 +143,7 @@ def MainWorkflow(file: str, riskScore: int):
     riskScoreKeyword = se.ScanEmail(emailToScan, urls)
 
     #Scan the URLs in the email for suspicious features
-    riskScoreURL = ud.scanURLs(urls, email_msg=emailToScan)
+    riskScoreURL = ud.ScanURLs(urls, email_msg=emailToScan)
     riskScore = riskScoreDistanceCheck + riskScoreWhitelistDomain + riskScoreKeyword + riskScoreURL
 
     #Assign Severity
