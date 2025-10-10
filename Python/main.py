@@ -59,7 +59,10 @@ def rerun():
     return flask.redirect(flask.url_for('home'))
 
 #=========Python===========
-def WebUIVariables(riskScore:int, riskLvl:str, riskScoreBlacklistDomain:int,riskScoreWhitelistDomain:int,riskScoreDistanceCheck:int,riskScoreKeyword:int,riskScoreURL:int,htmltext:str,plaintext:str,sender:str,recepient:str):
+def WebUIVariables(riskScore:int, riskLvl:str, riskScoreBlacklistDomain:int,
+                   riskScoreWhitelistDomain:int, riskScoreDistanceCheck:int,
+                   riskScoreKeyword:int, riskScoreURL:int, htmltext:str,
+                   plaintext:str, sender:str, recepient:str):
     """
     Function to display value of variables onto web UI
     """
@@ -122,9 +125,10 @@ def MainWorkflow(file: str, riskScore: int):
         riskLvl = "High. Very likely to be a phishing email"
         print(f'Total Risk Score: {riskScore}')
         print(f'Risk Level:{riskLvl}')
-        WebUIVariables(riskScore,riskLvl,riskScoreBlacklistDomain
-                       ,riskScoreWhitelistDomain,riskScoreDistanceCheck,riskScoreKeyword
-                       ,riskScoreURL,htmltext,plaintext,sender,recepient)
+        WebUIVariables(riskScore, riskLvl, riskScoreBlacklistDomain,
+                       riskScoreWhitelistDomain, riskScoreDistanceCheck, 
+                       riskScoreKeyword, riskScoreURL, htmltext, 
+                       plaintext,sender,recepient)
         return
     # Only executes for NON-BLACKLISTED domains:
     # Check if the sender's domain is whitelisted and add to risk score if not
@@ -148,7 +152,7 @@ def MainWorkflow(file: str, riskScore: int):
 
     #Assign Severity
     if riskScore < 40:
-        riskLvl = "Low. Unlikely to be Phising"
+        riskLvl = "Low. Unlikely to be Phishing"
     elif riskScore <= 100:
         riskLvl = "Medium. Could be a Phishing email"
     else:
@@ -157,9 +161,10 @@ def MainWorkflow(file: str, riskScore: int):
     print(f'Total Risk Score: {riskScore}')
     print(f'Risk Level:{riskLvl}')
     # For Web UI visualisation
-    WebUIVariables(riskScore,riskLvl,riskScoreBlacklistDomain
-                   ,riskScoreWhitelistDomain,riskScoreDistanceCheck,riskScoreKeyword
-                   ,riskScoreURL,htmltext,plaintext,sender,recepient)
+    WebUIVariables(riskScore, riskLvl, riskScoreBlacklistDomain, 
+                   riskScoreWhitelistDomain, riskScoreDistanceCheck, 
+                   riskScoreKeyword, riskScoreURL, htmltext, 
+                   plaintext, sender, recepient)
 
     pass
 
