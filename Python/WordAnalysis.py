@@ -5,10 +5,8 @@ Uses Log Odds smoothign for its weight.
 
 '''
 from collections import Counter
-#import numpy as np
 import ParseEmail as pe
 import os
-import re
 from email.message import EmailMessage
 import math
 
@@ -18,6 +16,10 @@ def CheckWords(mailList: list, wordList: list):
     Check the words in the subject and body of all emails in the list
     Adds all unique words that are not stopwords, 
     and are valid with no special characters to the list
+
+    Args:
+        mailList: The list of emails to check
+        wordList: The list of words to update
     '''
 
     #Checks the words in subject
@@ -41,9 +43,13 @@ def CheckWordsEML(email: EmailMessage, wordList: list):
     r'''
     Checks the words in the eml body
     Adds all unique words that are not stopwords, 
-    and are valid with no special characters to the list'''
-    # subjectString = email['subject'] 
-    # CheckString(subjectString, wordList)
+    and are valid with no special characters to the list
+
+    Args:
+        email: The email message to check
+        wordList: The list of words to update
+
+        '''
 
     # Checks the words in body
     bodyMessage = email 
@@ -56,6 +62,13 @@ def CheckString(string: str, wordList: list)-> list:
     r"""
     Checks the words in the string against the wordList
     Adds all unique words found into the wordList
+
+    Args:
+        string: The string to check
+        wordList: The list of words to update
+
+    Returns:
+        wordList: The updated list of words
     """
     for word in string.split():
             # Make sure its an actual word
@@ -75,6 +88,10 @@ def CheckString(string: str, wordList: list)-> list:
 
 def WriteToFile(words, path:str):
     '''Write the dictionary/list to a file
+
+    Args:
+        words: the list of words or dictionary of words with weightage
+        path: The file path to write the words to
     '''
     f = open(path, "w")
 
@@ -101,6 +118,12 @@ def WriteToFile(words, path:str):
 def EmailFreq(emailList: list)-> Counter:
     r"""
     Computes email frequency of the words used.
+
+    Args:
+        emailList: The list of emails to count word frequency
+
+    Returns:
+        emailFrequency: A Counter object with word frequencies in the list of emails
     """
 
     emailFrequency = Counter()
@@ -114,6 +137,11 @@ def EmailFreq(emailList: list)-> Counter:
 def CompileWordList(list1: list, list2: list):
     r"""Will add the 2 lists together for a compiled listing.
     Write the file out as compiledWordList.txt
+    
+    Args:
+        list1: The first list of words to be compiled
+        list2: The second list of words to be compiled
+
     """
     wordList1 = ConvertFileToList(list1)
     wordList2 = ConvertFileToList(list2)
@@ -133,6 +161,13 @@ def CheckStopwords(wordList, path):
     Checks and remove the words in the wordList against a list of Stopwords.
     Stopwords are words commonly used in the english language.
     eg. the, an, a, is, are, you, i, etc.
+
+    Args:
+        wordList: The word list to check against stopwords
+        path: The path to the stopwords file
+
+    Returns:
+        wordList: updated wordlist without stopwords
     """
     f = open(path, "r")
     stopwordList = [line.strip() for line in f.readlines()]
@@ -164,6 +199,12 @@ def IsValidWord(word: str)->bool:
 def ConvertFileToList(path: str)-> list:
     r"""
     Converts the file provided at the path to a list.
+
+    Args:
+        path: the file path to read from
+
+    Returns:
+        wordList: the list of words read from the file
     """
 
     wordList = []
@@ -179,6 +220,13 @@ def CheckEMLEmail(path: str, wordList: list):
     r"""
     Checks the directory of eml emails provided for unique words.
     Returns the wordList after checking the EML emails.
+
+    Args:
+        wordList: The word list to check against the EML emails
+        path: The path to the directory containing the EML emails
+
+    Returns:
+        wordList: the updated word list after checking the EML emails
     """
     for f in os.listdir(path):
         f = str(f)
@@ -271,7 +319,4 @@ if __name__=='__main__':
 
     LogOddsSmoothing()
     
-
-#    print(type(ParseMBox("../INF1002-LAB-P11-4/phishing_dataset/phishing0.mbox")))
-#    email = list(pe.ParseSingleEML("../INF1002-LAB-P11-4/easy_ham/easy_ham/0001.ea7e79d3153e7469e7a9c3e0af6a357e"))
     pass
