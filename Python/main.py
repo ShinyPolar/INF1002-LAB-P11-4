@@ -136,7 +136,7 @@ def MainWorkflow(file: str, riskScore: int):
     # Check the blacklist first
     riskScoreBlacklistDomain = dc.CheckBlacklistedDomain(sender, blacklistedDomains)
 
-    if riskScoreBlacklistDomain == 145:
+    if riskScoreBlacklistDomain == 110:
         # Immediate block: set total riskScore to max and skip other checks
         riskScore = riskScoreBlacklistDomain
         riskLvl = "High. Very likely to be a phishing email"
