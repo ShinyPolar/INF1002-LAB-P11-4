@@ -104,7 +104,7 @@ def MainWorkflow(file: str, riskScore: int):
     Calls all the necessary functions and tabulates the riskScores
     
     """
-    filetype = pe.detect_email_filetype(file) #checks if email is .mbox or .eml
+    filetype = pe.DetectEmailFiletype(file) #checks if email is .mbox or .eml
     if filetype == "mbox":
         emailToScan = pe.ParseSingleMbox(file)   #parse the sampleEmail to readable status for mbox files
     elif filetype == "eml":
@@ -123,7 +123,6 @@ def MainWorkflow(file: str, riskScore: int):
     blacklistedDomains = dc.LoadDomains("Domains/blacklistedDomains.txt")
 
 
-    #print(f"emailtoscan:{emailToScan}")
     #gets sender email address from the "from" header in the email
     sender = pe.GetSender(emailToScan)
 
@@ -161,7 +160,7 @@ def MainWorkflow(file: str, riskScore: int):
     #Scans the email for suspicious words
 
     urls = ud.ExtractURLsFromText(plaintext) + ud.ExtractURLsFromText(htmltext)
-    riskScoreKeyword = se.ScanEmail(emailToScan, urls)
+    riskScoreKeyword = se.ScanEmail(emailToScan)
 
     #Scan the URLs in the email for suspicious features
     riskScoreURL = ud.ScanURLs(urls, email_msg=emailToScan)

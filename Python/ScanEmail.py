@@ -3,21 +3,31 @@ Scanning Email module
 will be the place where it scans the email for suspicious words
 and returns a risk score based on the findings
 
+Key functionalities include:
+- Setting the suspicious words with weightage from a text file
+- Scanning the subject line for suspicious words
+- Scanning the body of the email for suspicious words
 '''
 
-import mailbox
 import os
 from email.header import decode_header
 import ParseEmail as pe
+from email.message import EmailMessage
 
 
 
 suspiciousWords = {}
 riskScoreSubject = float(0.0)
 riskScoreBody = float(0.0)
-def ScanEmail(email: mailbox.mboxMessage, urls: list=[])->int:
+def ScanEmail(email: EmailMessage)->int:
     '''Scan the email for suspicious words if there are suspicious words found it would check if it is the first 30 words of the email body.
     Decode the subject line of the email.
+
+    Args:
+        email: Email in the format EmailMessage to scan
+
+    Returns:
+        The risk score of the email based on the findings
     '''
     #Reinitialize the risk scores for subject and body
     global riskScoreSubject, riskScoreBody
@@ -31,22 +41,22 @@ def ScanEmail(email: mailbox.mboxMessage, urls: list=[])->int:
     riskScore = int(riskScoreSubject+riskScoreBody)
     riskScore = max(0, min(riskScore, 30))
     return riskScore
-    #scanURLs(urls)
 
-def ScanSubject(email: mailbox.mboxMessage):
+def ScanSubject(email: EmailMessage):
     '''Scan the subject of the email for suspicious words, 
     adding to the risk score when necessary
+    
+    Args:
+        email: Email in the format EmailMessage to scan
+
     '''
     #Decodes the subject line. If it does not need to be decoded it will still pass
     #risk score for subject and position based on the word doc
     subject = email['subject']
 
-    # Theres a problem here for dataset no.159 from hard_ham where TypeError: expected string or bytes-like object, got 'NoneType'
     subject = decode_header(subject)
     
-    # Theres a problem here for dataset no.2132 from easy_ham where the encoding is unknown-8(or smthg liddat)
     subject = ''.join(part.decode(charset or 'utf-8') if isinstance(part, bytes) else part for part, charset in subject)
-    #subject = subject.lower()
     print(subject)
 
     global riskScoreSubject
@@ -55,18 +65,24 @@ def ScanSubject(email: mailbox.mboxMessage):
     for word, weightage in suspiciousWords.items():
         if word == subject:
             print(f"Found suspicious word '{word}' in subject line.")
-            riskScoreSubject += 3 * weightage
+            riskScoreSubject += 10 * weightage
     pass
 
-def ScanBody(email: mailbox.mboxMessage):
+def ScanBody(email: EmailMessage):
     '''Scan the body of the email for suspicious words, 
     adding to the risk score when necessary
+
+    Args:
+        email: Email in the format EmailMessage to scan
+
     '''
 
 
     global riskScoreBody
     foundWords = []
     foundWords30 = []
+
+    #Get the plain text of the email, if it is not available get the clean HTML text
     textToScan = pe.GetPlainText(email)
     if not textToScan:
         textToScan = pe.GetCleanHTMLText(email) 
@@ -74,18 +90,16 @@ def ScanBody(email: mailbox.mboxMessage):
     for word, weightage in suspiciousWords.items():
         if word in textToScanList:
             foundWords.append(word)
-            #potentially faster if using dictionary/list maybe?
 
-            riskScoreBody += 1 * weightage
-            #place holder until we decide how riskScoring will work
+            #add to risk score
+            riskScoreBody += 5 * weightage
 
-            #first30Words = textToScan.split()
+            #check if it is in the first 30 words, then add to risk score again
             first30Words = textToScanList[:30]
-
             for position in first30Words:
                 if word == position:
                     foundWords30.append(word)
-                    riskScoreBody += 3 * weightage
+                    riskScoreBody += 5 * weightage
 
 
     
@@ -110,12 +124,17 @@ def ScanBody(email: mailbox.mboxMessage):
     return
 
 def SetSuspiciousWords(file: str):
-    '''Set the dictionary of suspicious words
+    '''Sets the dictionary of suspicious words with weightage
+    
+    Args:
+        email: Email in the format EmailMessage to scan
+
     '''
     global suspiciousWords
     filepath = os.path.join("Lists", file)
-    with open(filepath, "r", encoding="latin-1") as textfile:
+    with open(filepath, "r") as textfile:
         for line in textfile:
+            # Splits the line into word and weightage through a common delimiter ": "
             word, weightage = line.split(": ")
             word = word.strip()
             weightage = float(weightage.strip())
