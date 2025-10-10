@@ -92,7 +92,7 @@ def CheckBlacklistedDomain(emailAdd, blacklistedDomains):
         /incomplete sender email, else 0
     '''
 
-    maxRisk = 185  # defining the maximum risk score for a blacklisted domain, indicating a block
+    maxRisk = 170  # defining the maximum risk score for a blacklisted domain, indicating a block
 
     #check for presence of email address and assign max risk score if email address is not found/incomplete
     if CheckSender(emailAdd) == False:
@@ -213,7 +213,7 @@ def CheckSenderLevenshtein(sender:str, whiteList:list, riskScore:int):
         #print(f"levenshtein distance:{distance}")
         if distance <= 2: # threshold for flagging as suspicious (allowing for minor typos)
             print(f"Sender email {sender} is similar to {w} as levenshtein distance is {distance}.") # flag as suspicious and add penalty to risk score
-            riskScore += 30 # penalty for failing edit distance check
+            riskScore += 20 # penalty for failing edit distance check
             return riskScore # return updated risk score if sender email is similar to any whitelisted domains
 
     print("Sender email passed edit distance check")

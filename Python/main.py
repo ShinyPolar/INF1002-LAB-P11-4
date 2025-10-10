@@ -122,6 +122,8 @@ def MainWorkflow(file: str, riskScore: int):
     # Initialize blacklisted domains
     blacklistedDomains = dc.LoadDomains("Domains/blacklistedDomains.txt")
 
+
+    #print(f"emailtoscan:{emailToScan}")
     #gets sender email address from the "from" header in the email
     sender = pe.GetSender(emailToScan)
 
@@ -135,7 +137,7 @@ def MainWorkflow(file: str, riskScore: int):
     # Check the blacklist first
     riskScoreBlacklistDomain = dc.CheckBlacklistedDomain(sender, blacklistedDomains)
 
-    if riskScoreBlacklistDomain == 185:
+    if riskScoreBlacklistDomain == 170:
         # Immediate block: set total riskScore to max and skip other checks
         riskScore = riskScoreBlacklistDomain
         riskLvl = "High. Very likely to be a phishing email"
@@ -168,7 +170,7 @@ def MainWorkflow(file: str, riskScore: int):
     #Assign Severity
     if riskScore < 40:
         riskLvl = "Low. Unlikely to be Phishing"
-    elif riskScore <= 100:
+    elif riskScore <= 80:
         riskLvl = "Medium. Could be a Phishing email"
     else:
         riskLvl = "High. Very likely to be a phishing email"
