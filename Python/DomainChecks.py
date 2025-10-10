@@ -14,7 +14,7 @@ def LoadWhitelistedDomains(filename: str) -> list:
         filename: path to the text file
 
     Returns:
-        The updated whitelistedDomains list
+        List whitelistedDomains
     '''
     #global WhitelistedDomains
     #WhitelistedDomains.clear()  # reset before loading
@@ -42,7 +42,7 @@ def LoadBlacklistedDomains(filename: str) -> list:
         filename: path to the text file
 
     Returns:
-        The updated BlacklistedDomains list
+        List blacklistedDomains
     '''
     #global BlacklistedDomains
     #BlacklistedDomains.clear()  # reset before loading
@@ -72,6 +72,9 @@ def CheckWhitelistedDomain(emailadd,riskScore,whitelistedDomains):
         emailadd: email address
         riskScore: The current risk Score
         WhitelistedDomains: List containing Whitelisted Domain names
+
+    Returns:
+        Integer Risk Score (0 if whitelisted, 20 if not)
     '''
 
     penalty = 20 #defining the penalty for failing the Domain Whitelist Check
