@@ -136,7 +136,7 @@ def MainWorkflow(file: str, riskScore: int):
     # Check the blacklist first
     riskScoreBlacklistDomain = dc.CheckBlacklistedDomain(sender, blacklistedDomains)
 
-    if riskScoreBlacklistDomain == 170:
+    """  if riskScoreBlacklistDomain == 145:
         # Immediate block: set total riskScore to max and skip other checks
         riskScore = riskScoreBlacklistDomain
         riskLvl = "High. Very likely to be a phishing email"
@@ -146,7 +146,7 @@ def MainWorkflow(file: str, riskScore: int):
                        riskScoreWhitelistDomain, riskScoreDistanceCheck, 
                        riskScoreKeyword, riskScoreURL, htmltext, 
                        plaintext,sender,recepient)
-        return
+        return """
     # Only executes for NON-BLACKLISTED domains:
     # Check if the sender's domain is whitelisted and add to risk score if not
     riskScoreWhitelistDomain = dc.CheckWhitelistedDomain(sender, riskScore, whitelistedDomains)
@@ -169,7 +169,7 @@ def MainWorkflow(file: str, riskScore: int):
     #Assign Severity
     if riskScore < 40:
         riskLvl = "Low. Unlikely to be Phishing"
-    elif riskScore <= 80:
+    elif riskScore <= 70:
         riskLvl = "Medium. Could be a Phishing email"
     else:
         riskLvl = "High. Very likely to be a phishing email"

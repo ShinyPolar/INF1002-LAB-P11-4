@@ -39,7 +39,7 @@ def ScanEmail(email: EmailMessage)->int:
 
     #Clamp values
     riskScore = int(riskScoreSubject+riskScoreBody)
-    riskScore = max(0, min(riskScore, 30))
+    riskScore = max(0, min(riskScore, 45))
     return riskScore
 
 def ScanSubject(email: EmailMessage):

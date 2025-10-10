@@ -62,7 +62,7 @@ def CheckWhitelistedDomain(emailadd,riskScore,whitelistedDomains):
         riskScore: Adds an integer value of 20 if not whitelisted, 0 if whitelisted
     '''
 
-    penalty = 20 #defining the penalty for failing the Domain Whitelist Check
+    penalty = 40 #defining the penalty for failing the Domain Whitelist Check
 
     #splits the email address into username and domain name, converts the domain name to lowercase and assign domain name to variable
     domain = emailadd.split("@")[-1].lower() 
