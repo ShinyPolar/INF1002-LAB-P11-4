@@ -155,7 +155,7 @@ def MainWorkflow(file: str, riskScore: int):
     #if email fails whitelist check
     if riskScoreWhitelistDomain > 0:
         #Edit distance check 
-        riskScoreDistanceCheck = dc.checkSenderLevenshtein(sender,whitelistedDomains,riskScore) 
+        riskScoreDistanceCheck = dc.CheckSenderLevenshtein(sender,whitelistedDomains,riskScore) 
         #print(riskScore)
 
     #Scans the email for suspicious words

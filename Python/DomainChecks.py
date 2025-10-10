@@ -46,19 +46,10 @@ def CheckWhitelistedDomain(emailadd,riskScore,whitelistedDomains):
         WhitelistedDomains: List containing Whitelisted Domain names
 
     Returns:
-        riskScore: Integer value of 0 if whitelisted, 20 if not
+        riskScore: Adds an integer value of 20 if not whitelisted, 0 if whitelisted
     '''
 
     penalty = 20 #defining the penalty for failing the Domain Whitelist Check
-    
-    if not emailadd: #if no sender from header, flag as suspicious and add penalty to risk score
-        print(f'\nSuspicious email detected. No sender found')
-        riskScore+=penalty
-        return riskScore
-    elif "@" not in emailadd: #if "@" not in addr, flag as suspicious and add penalty to risk score
-        print(f'\nSuspicious email detected. Sender email address ({emailadd}) does not contain @')
-        riskScore+=penalty
-        return riskScore
 
     #splits the email address into username and domain name, converts the domain name to lowercase and assign domain name to variable
     domain = emailadd.split("@")[-1].lower() 
@@ -73,7 +64,7 @@ def CheckWhitelistedDomain(emailadd,riskScore,whitelistedDomains):
         print(f'\nSender email address ({emailadd}) is whitelisted')
         return riskScore
 
-def CheckBlacklistedDomain(emailadd, blacklistedDomains):
+def CheckBlacklistedDomain(emailAdd, blacklistedDomains):
     '''
     Check if the sender's email domain is in the blacklist.
     - If blacklisted: return maximum risk score indicating an immediate block.
@@ -84,21 +75,18 @@ def CheckBlacklistedDomain(emailadd, blacklistedDomains):
         BlacklistedDomains: List containing Blacklisted Domain names
     
     Returns:
-        riskScore: max integer risk score (185) if domain is blacklisted, else 0
+        riskScore: max integer risk score (185) if domain is blacklisted/no sender
+        /incomplete sender email, else 0
     '''
 
     maxRisk = 185  # defining the maximum risk score for a blacklisted domain, indicating a block
 
-    if not emailadd:  # if no sender email address is provided, mark as suspicious and block
-        print(f"Suspicious email: invalid sender '{emailadd}'")
-        return maxRisk # immediately block by returning max risk score
-
-    elif "@" not in emailadd:  # if the sender email does not contain '@', mark as suspicious and block
-        print(f"Suspicious email: sender email address '{emailadd}' does not contain '@'")
-        return maxRisk # immediately block by returning max risk score
-
+    #check for presence of email address and assign max risk score if email address is not found/incomplete
+    if CheckSender(emailAdd) == False:
+        return maxRisk
+    
     # splits the email address into username and domain name, converts domain to lowercase for consistent comparison
-    domain = emailadd.split("@")[-1].lower()
+    domain = emailAdd.split("@")[-1].lower()
 
     # check if the extracted domain is in the blacklist
     if domain in blacklistedDomains:
@@ -108,8 +96,31 @@ def CheckBlacklistedDomain(emailadd, blacklistedDomains):
     # if domain is not blacklisted, return 0 indicating no blacklist risk
     return 0
 
+def CheckSender(emailAdd:str):
+    """
+    Validate the sender's email address format.
+
+    This function checks whether a sender email address is present and
+    contains the '@' symbol. If the address is missing or malformed,
+    it is flagged as suspicious and the function returns False. Otherwise,
+    the address is considered valid and the function returns True.
+
+    Args:
+        emailAdd (str): The sender's email address to validate.
+
+    Returns:
+        bool: 
+            - False if the email address is missing or invalid.
+            - True if the email address is valid.
+    """
+    # if no sender email address is provided or if sender email does not contain '@', mark as suspicious and block
+    if not emailAdd or "@" not in emailAdd:  
+        print(f"Suspicious email: invalid sender '{emailAdd}'")
+        return False # immediately block by returning False
+    return True
+
 # edit distance check
-def levenshtein(source: str, target: str) -> int:
+def Levenshtein(source: str, target: str) -> int:
     '''
     Compute the Levenshtein distance between two strings.
     - The distance is the minimum number of insertions, deletions, 
@@ -130,7 +141,7 @@ def levenshtein(source: str, target: str) -> int:
 
     # Ensure source is the longer string (for memory efficiency)
     if len(source) < len(target): # Swap if source is shorter than target
-        return levenshtein(target, source) # Recursive call with swapped arguments
+        return Levenshtein(target, source) # Recursive call with swapped arguments
 
     # If target is empty, distance = remove all chars from source
     if len(target) == 0:
@@ -167,7 +178,7 @@ def levenshtein(source: str, target: str) -> int:
     # The last cell = distance between full source and full target
     return prevDistances[-1]
 
-def checkSenderLevenshtein(sender:str, whiteList:list, riskScore:int):
+def CheckSenderLevenshtein(sender:str, whiteList:list, riskScore:int):
     '''
     Check if the sender's email domain is visually similar to any whitelisted domain.
     - If similarity is detected (edit distance ≤ threshold): add penalty to riskScore.
@@ -184,7 +195,7 @@ def checkSenderLevenshtein(sender:str, whiteList:list, riskScore:int):
     
     for w in whiteList:
         #print(f'sender:{sender},whitelisted email:{w}')
-        distance = levenshtein(sender,w) # using custom levenshtein function to compute edit distance
+        distance = Levenshtein(sender,w) # using custom levenshtein function to compute edit distance
         
         #print(f"levenshtein distance:{distance}")
         if distance <= 2: # threshold for flagging as suspicious (allowing for minor typos)
