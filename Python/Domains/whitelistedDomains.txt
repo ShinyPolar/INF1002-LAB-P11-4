@@ -15,7 +15,7 @@ cmu.edu
 cs.indiana.edu
 spamassasin.org
 slack.net
-perl.org
+pearl.org
 comcast.net
 canada.com
 pobox.com

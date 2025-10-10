@@ -46,7 +46,6 @@ def LoadDomains(filename: str) -> list:
 
     return domains
 
-
 def CheckDomain(emailAdd,domains):
     '''
     Check if the sender's email domain is in the list provided.
