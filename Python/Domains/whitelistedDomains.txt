@@ -32,3 +32,6 @@ magnesium.net
 permafrost.net
 mithral.com
 munnari.oz.au
+hotmail.com
+lists.sourceforge.net
+alerts.weather.com
