@@ -5,8 +5,9 @@ from datetime import datetime
 from urllib.parse import urlparse
 from ParseEmail import SetBodyCleanText
 
+# Find all URLs in the text
 def ExtractURLsFromText(text: str):
-    # matches http://, https://, or www.something
+    # Matches http://, https://, or www.something
     urlPattern = r'(https?://[^\s]+|www\.[^\s]+)'
     urls = re.findall(urlPattern, text)
     return urls
@@ -24,10 +25,11 @@ def CheckDomainMismatch(email_msg):
     actualDomains = []
 
     cleanText = SetBodyCleanText(email_msg)
-    urls = ExtractURLsFromText(cleanText)
     # Ensure cleanText is a string if it comes as a list
     if isinstance(cleanText, list):
         cleanText = " ".join(cleanText)
+
+    urls = ExtractURLsFromText(cleanText)
 
     for url in urls:
         url = url.strip(' "\'<>')  # clean up any surrounding characters
@@ -36,8 +38,6 @@ def CheckDomainMismatch(email_msg):
         ext = tldextract.extract(url)
         actualDomain = f"{ext.domain}.{ext.suffix}" if ext.suffix else ext.domain
         actualDomain = actualDomain.lower()
-        if not actualDomains:
-            continue
         actualDomains.append(actualDomain)
 
         # Extract claimed domain from URL itself
@@ -55,6 +55,7 @@ def CheckDomainMismatch(email_msg):
 
     return mismatches, actualDomains, riskScore
 
+# Uses the whois module to find out how long ago the domain was registered
 def GetDomainAge(domains):
     riskScore = 0
     try:
@@ -65,14 +66,14 @@ def GetDomainAge(domains):
                 creationDate = creationDate[0]
             if creationDate:
                 ageYear = (datetime.now() - creationDate).days / 365
-                if ageYear < 1 and ageYear == 0:
+                if ageYear < 1:
                     riskScore = 20
                     return riskScore
     except Exception as e:
         print(f"WHOIS lookup failed for {domain}: {e}")
     return riskScore
 
-#get domain from URL
+# Get domain from URL, removing www.
 def GetDomain(urls):
     domains = []
     for url in urls:
@@ -82,7 +83,7 @@ def GetDomain(urls):
         domains.append(netloc.lower())
     return domains
 
-# check if URL contains an IP address
+# Check if URL contains an IP address
 ipaddPattern = r'^((([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:))|(([0-9a-fA-F]{1,4}:){6}(:[0-9a-fA-F]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-fA-F]{1,4}:){5}(((:[0-9a-fA-F]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9a-fA-F]{1,4}:){4}(((:[0-9a-fA-F]{1,4}){1,3})|((:[0-9a-fA-F]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:){3}(((:[0-9a-fA-F]{1,4}){1,4})|((:[0-9a-fA-F]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:){2}(((:[0-9a-fA-F]{1,4}){1,5})|((:[0-9a-fA-F]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9a-fA-F]{1,4}:)(((:[0-9a-fA-F]{1,4}){1,6})|((:[0-9a-fA-F]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9a-fA-F]{1,4}){1,7})|((:[0-9a-fA-F]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?$'
 
 def URLContainsIP(urls):
@@ -93,6 +94,7 @@ def URLContainsIP(urls):
             riskScore += 40
     return riskScore
 
+# Checks the structure of the URL for suspicious traits
 def LexicalFeatures(urls): 
     riskScore = 0
     domains = GetDomain(urls)
@@ -111,41 +113,14 @@ def LexicalFeatures(urls):
             riskScore += 1
     return riskScore
 
-def LoadBlacklist():
-    file_path="Domains/sampleBlacklistedDomains.txt"
-    try:
-        with open(file_path, "r") as f:
-            # convert all to lowercase and ignore empty lines
-            return {line.strip().lower() for line in f if line.strip()}
-    except FileNotFoundError:
-        print("File not found.")
-        return set()
-
-def CheckBlacklist(domains):
-    riskScore = 0
-    matches = []
-    blacklist = LoadBlacklist()
-
-    for domain in domains:
-        if domain.lower() in blacklist:
-            riskScore += 15  
-            matches.append(domain)
-
-    if matches:
-        print(f"Blacklisted domains detected in URL: {matches}")
-    return riskScore, matches
-
-
+# Scan URLs and calculate risk score
 def scanURLs(urls,email_msg):
     if not urls:
             print("No URLs found.")
             return 0
-    domains = GetDomain(urls)
     mismatches, actualDomains, domainMismatchScore = CheckDomainMismatch(email_msg)
-    blacklist = LoadBlacklist()
-    blacklistScore, blacklistedDomains = CheckBlacklist(domains)
     totalRisk = 0
-    totalRisk += URLContainsIP(urls) + LexicalFeatures(urls) + domainMismatchScore + GetDomainAge(actualDomains) + blacklistScore
+    totalRisk += URLContainsIP(urls) + LexicalFeatures(urls) + domainMismatchScore + GetDomainAge(actualDomains)
     print("URL Risk Score:", totalRisk)
     print("URLs scanned:", urls)
     return totalRisk
