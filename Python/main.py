@@ -158,8 +158,9 @@ def MainWorkflow(file: str, riskScore: int):
 
     #Scans the email for suspicious words
 
-    email_text = pe.GetPlainText(emailToScan)
-    urls = ud.ExtractURLsFromText(email_text)
+    #email_text = pe.GetPlainText(emailToScan)
+    #print(f"text in email:{email_text}")
+    urls = ud.ExtractURLsFromText(plaintext) + ud.ExtractURLsFromText(htmltext)
     riskScoreKeyword = se.ScanEmail(emailToScan, urls)
 
     #Scan the URLs in the email for suspicious features
