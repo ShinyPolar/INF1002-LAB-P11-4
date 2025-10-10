@@ -35,3 +35,7 @@ munnari.oz.au
 hotmail.com
 lists.sourceforge.net
 alerts.weather.com
+ebay.com.sg
+shopee.sg
+lazada.sg
+paypal.com

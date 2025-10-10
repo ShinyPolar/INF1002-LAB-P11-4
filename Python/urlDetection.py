@@ -71,10 +71,11 @@ def GetDomainAge(domains):
             if creationDate:
                 ageYear = (datetime.now() - creationDate).days / 365
                 if ageYear < 1:
-                    riskScore = 20
+                    riskScore = 10
                     return riskScore
     except Exception as e:
         print(f"WHOIS lookup failed for {domain}: {e}")
+        riskScore = 10
     return riskScore
 
 # Get domain from URL, removing www.
