@@ -5,7 +5,7 @@
     <title>Phishing Email Detector</title>
     <style>
         #drop-area {
-            border: 3px solid #ffffffab;
+            border: 3px solid #747474;
             border-radius: 20px;
             width: 60%;
         }
@@ -27,17 +27,15 @@
 
         .analysis-box{
             display: flex;
+            flex: 2;
             /*align-items: center;*/
             flex-direction: column;
-            justify-content: center;
-            height: 20vh;
+            height: 10vh;
             color: red;
             align-items:center;
         }
 
         .analysis-display{
-            width: 20%;
-            text-align: left;
             margin: 5px 0;
         }
 
@@ -59,7 +57,7 @@
             flex: 1;                /* make both boxes equal width */
             display: flex;
             flex-direction: column; /* stack title and content vertically */
-            border: 1px solid #ccc;
+            border: 1px solid #ffffff;
             border-radius: 10px;
             padding: 10px;
             background: #f9f9f9;
@@ -71,27 +69,31 @@
         }
     </style>
     </head>
-    <body>
-        <h1>Phishing Email Detector</h1>
-        <div class="analysis-box">
-            <h1 class = "analysis-display">RISK SCORE: {{riskScore}}</h1>
-            <h1 class = "analysis-display">RISK SEVERITY: {{riskLvl}}</h1>
-            <p class = "analysis-display">By Blacklisted Domain Check: {{riskScoreBlacklistDomain}}</p>
-            <p class = "analysis-display">By Whitelisted Domain Check: {{riskScoreWhitelistDomain}}</p>
-            <p class = "analysis-display">By Edit Distance Check: {{riskScoreDistanceCheck}}</p>
-            <p class = "analysis-display">By Keyword Check: {{riskScoreKeyword}}</p>
-            <p class = "analysis-display">By URL Check: {{riskScoreURL}}</p>
+    <body style="background-color:#f0f0f0;">
+        <div style="display:flex; height: 40vh;">
+            <div style="flex:1;">
+            <h1>Phishing Email Detector</h1>
+            <h2>Upload a File</h2>
+            <div id="drop-area">
+                <p>Drag & drop a file here or click to select one</p>
+                <input type="file" id="fileElem" hidden>
+                <label for="fileElem" style="cursor:pointer; color:blue;">Choose File</label>
 
-        </div>
+                <button id="rerun-btn">Re-run Analysis</button>
+            </div>
+            </div>
 
-        <h2>Upload a File</h2>
 
-        <div id="drop-area">
-            <p>Drag & drop a file here or click to select one</p>
-            <input type="file" id="fileElem" hidden>
-            <label for="fileElem" style="cursor:pointer; color:blue;">Choose File</label>
+            <div class="analysis-box">
+                <h1 class = "analysis-display">RISK SCORE: {{riskScore}}</h1>
+                <h1 class = "analysis-display">RISK SEVERITY: {{riskLvl}}</h1>
+                <p class = "analysis-display">By Blacklisted Domain Check: {{riskScoreBlacklistDomain}}</p>
+                <p class = "analysis-display">By Whitelisted Domain Check: {{riskScoreWhitelistDomain}}</p>
+                <p class = "analysis-display">By Edit Distance Check: {{riskScoreDistanceCheck}}</p>
+                <p class = "analysis-display">By Keyword Check: {{riskScoreKeyword}}</p>
+                <p class = "analysis-display">By URL Check: {{riskScoreURL}}</p>
+            </div>
 
-            <button id="rerun-btn">Re-run Analysis</button>
         </div>
 
         <div class="overall-display">
