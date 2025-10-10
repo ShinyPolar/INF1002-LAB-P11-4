@@ -1,6 +1,6 @@
 r'''
 This module provides a comprehensive toolkit for parsing email files,
-including both `.mbox` and `.eml` formats. It is designed to extract key
+including both '.mbox' and '.eml' formats. It is designed to extract key
 information from raw email data, such as headers (sender, recipient),
 and body content (plain text and HTML).
 
@@ -12,7 +12,7 @@ The module includes functionalities to:
 - Provide easy access to specific parts of an email, like the sender's address,
   plain text body, or HTML body.
 
-It leverages standard Python libraries like `mailbox`, `email`, and `html.parser`
+It leverages standard Python libraries like 'mailbox', 'email', and 'html.parser'
 to provide a reliable and structured way to process email messages for analysis.
 '''
 
