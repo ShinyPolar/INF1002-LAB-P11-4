@@ -1,8 +1,21 @@
 r'''
-Module to check sender email domain
+This module provides functions for email domain security checks.
 
+It is designed to be used in a phishing or spam detection system to analyze
+the sender's email address. The primary functions involve validating the
+sender's domain against whitelists and blacklists, checking for basic email
+format validity, and detecting potentially malicious, visually similar domains
+(typosquatting) using the Levenshtein distance algorithm.
 
+Key functionalities include:
+- Loading whitelisted and blacklisted domains from external files.
+- Checking if a sender's domain is explicitly whitelisted.
+- Checking if a sender's domain is explicitly blacklisted.
+- Validating the basic structure of the sender's email address.
+- Calculating the Levenshtein distance to find domains that are suspiciously
+  similar to whitelisted domains.
 '''
+
 from Levenshtein import distance # Using Levenshtein library
 
 def LoadDomains(filename: str) -> list:
@@ -119,7 +132,7 @@ def CheckSender(emailAdd:str):
         return False # immediately block by returning False
     return True
 
-# edit distance check
+
 def Levenshtein(source: str, target: str) -> int:
     '''
     Compute the Levenshtein distance between two strings.

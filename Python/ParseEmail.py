@@ -1,8 +1,21 @@
 r'''
-Parsing Email Module
+This module provides a comprehensive toolkit for parsing email files,
+including both `.mbox` and `.eml` formats. It is designed to extract key
+information from raw email data, such as headers (sender, recipient),
+and body content (plain text and HTML).
 
+The module includes functionalities to:
+- Automatically detect the email file format (mbox or eml).
+- Parse entire mbox archives or single email files.
+- Extract and decode text content, with robust handling for various character sets.
+- Sanitize HTML content by stripping out tags, converting it to plain text.
+- Provide easy access to specific parts of an email, like the sender's address,
+  plain text body, or HTML body.
 
+It leverages standard Python libraries like `mailbox`, `email`, and `html.parser`
+to provide a reliable and structured way to process email messages for analysis.
 '''
+
 import mailbox
 from email import message_from_file
 from email.message import EmailMessage
@@ -14,15 +27,44 @@ from email.parser import BytesParser
 from html.parser import HTMLParser
 
 class HTMLStripper(HTMLParser):
+    """
+    A simple HTML parser class to strip HTML tags from a string.
+
+    This class inherits from 'html.parser.HTMLParser' and overrides the
+    'handle_data' method to collect all character data encountered, effectively
+    ignoring all HTML tags.
+    """
     def __init__(self):
+        """Initializes the parser and a list to store data."""
         super().__init__()
         self.data = []
     def handle_data(self, d):
+        """
+        Collects character data from the HTML.
+
+        Args:
+            d (str): A chunk of character data.
+        """
         self.data.append(d)
     def get_data(self):
+        """
+        Returns all collected character data as a single string.
+
+        Returns:
+            str: The concatenated, tag-free text.
+        """
         return ''.join(self.data)
 
 def strip_html(html):
+    """
+    Removes HTML tags from a given string of HTML.
+
+    Args:
+        html (str): The HTML string to be stripped.
+
+    Returns:
+        str: The plain text content from the HTML.
+    """
     s = HTMLStripper()
     s.feed(html)
     return s.get_data()
@@ -34,7 +76,8 @@ def detect_email_filetype(filepath: str) -> str:
     This function inspects the first non-blank line of the file to infer
     its format:
       - If the line begins with "From ", it is treated as an mbox file.
-      - If the line begins with a standard email header (e.g., "From:", "To:", "Subject:"),
+      - If the line begins with a standard email header (e.g., "From:", "To:", "Subject:",
+        "Date:", "Forwarded:", "Replied:", "Received:", "Delivered-To:"),
         it is treated as an eml file.
       - Otherwise, the format is considered unknown.
 
@@ -66,9 +109,16 @@ def detect_email_filetype(filepath: str) -> str:
     return "unknown"
 
 def ParseMBox(path: str):
-    '''
-    Parse the mbox file and return a list of email messages
-    '''
+    """
+    Parses an mbox file and returns a list of email message objects.
+
+    Args:
+        path (str): The file path to the mbox archive.
+
+    Returns:
+        list: A list of 'mailbox.mboxMessage' objects, where each object
+              represents an email in the archive.
+    """
     mbox = mailbox.mbox(path)
     phishing_mailList = [message for message in mbox] 
     # for message in mbox:
@@ -80,12 +130,17 @@ def ParseMBox(path: str):
     return phishing_mailList
 
 def ParseSingleMbox(path: str):
-    '''
-    Parse a single mbox file and return the email message
+    """
+    Parses an mbox file and returns only the first email message.
+
+    This is useful for mbox files that are known to contain only one email.
 
     Args:
+        path (str): The file path to the mbox file.
 
-    '''
+    Returns:
+        mailbox.mboxMessage: The first email message object found in the mbox file.
+    """
     mbox = mailbox.mbox(path)
     return mbox[0] #return the first email in the mbox file
 
@@ -107,8 +162,19 @@ def ParseSingleEML(path: str):
     return msg
 
 def TryDecode(decodeText:str, charset):
-    r"""Tries to decode payload of mbox.
-    Returns the string if it is able to decode, otherwise decode it in utf-8
+    """
+    Attempts to decode a byte string using a specified charset, with a fallback to UTF-8.
+
+    This function is designed to handle potential decoding errors gracefully by
+    first trying the provided charset and then falling back to 'utf-8' if the
+    initial attempt fails.
+
+    Args:
+        decodeText (bytes): The byte string to decode.
+        charset (str): The character set to try first (e.g., 'iso-8859-1').
+
+    Returns:
+        str: The decoded string.
     """
     returnString = ""
     try:
@@ -119,8 +185,20 @@ def TryDecode(decodeText:str, charset):
 
 
 def SetBodyCleanText(msg: EmailMessage)->str:
-    '''Extract texts from an email message, handling both plain text and HTML parts,
-    then subsequently set it as the new payload of the email message.'''
+    """
+    Extracts, cleans, and sets the plain text body of an email message.
+
+    This function walks through all parts of an email message, extracts both
+    'text/plain' and 'text/html' content, strips HTML tags from the latter,
+    combines them, and then replaces the message's payload with this unified,
+    clean text.
+
+    Args:
+        msg (EmailMessage): The email message object to process.
+
+    Returns:
+        str: The cleaned and combined plain text content.
+    """
     plainText = htmlText = ""
     for part in msg.walk():
         content_type = part.get_content_type()
@@ -141,6 +219,18 @@ def SetBodyCleanText(msg: EmailMessage)->str:
     return cleanText
 
 def GetPlainText(msg: EmailMessage)->str:
+    """
+    Extracts the plain text content from an email message.
+
+    It walks through the message parts and returns the content of the first
+    part with a 'text/plain' content type.
+
+    Args:
+        msg (EmailMessage): The email message object.
+
+    Returns:
+        str: The plain text content, or an empty string if not found.
+    """
     plainText = ""
     if msg.is_multipart():
         for part in msg.walk():
@@ -153,6 +243,18 @@ def GetPlainText(msg: EmailMessage)->str:
     return plainText
 
 def GetHTMLText(msg: EmailMessage)->str:
+    """
+    Extracts the raw HTML content from an email message.
+
+    It walks through the message parts and returns the content of the first
+    part with a 'text/html' content type.
+
+    Args:
+        msg (EmailMessage): The email message object.
+
+    Returns:
+        str: The raw HTML content, or an empty string if not found.
+    """
     htmlText = ""
     if msg.is_multipart():
         for part in msg.walk():
@@ -165,6 +267,19 @@ def GetHTMLText(msg: EmailMessage)->str:
     return htmlText
 
 def GetCleanHTMLText(msg: EmailMessage)->str:
+    """
+    Extracts and strips the HTML content from an email message.
+
+    It finds the 'text/html' part of the message, decodes it, and removes
+    all HTML tags, returning the resulting plain text.
+
+    Args:
+        msg (EmailMessage): The email message object.
+
+    Returns:
+        str: The cleaned (tag-stripped) text from the HTML part, or an
+             empty string if no HTML part is found.
+    """
     cleanHTMLText = ""
     if msg.is_multipart():
         for part in msg.walk():
@@ -180,15 +295,15 @@ def GetCleanHTMLText(msg: EmailMessage)->str:
 
     return
 def GetSender(email)->str:
-    '''
+    """
     Extract Sender from the email.
     
     Args:
-        email: parsed email object (dict-like with "From" header).
+        email (EmailMessage): parsed email object (dict-like with "From" header).
 
     Returns:
-        Email address of sender
-    '''
+        Email address of sender(string)
+    """
     #gets sender information via the from header, this consists of sender display name + email address
     sender = email.get("From") or email.get("from")
 
@@ -196,10 +311,17 @@ def GetSender(email)->str:
     addr = parseaddr(sender)[1]
     return addr
 
-def GetRecepient(msg: EmailMessage)->str:
-    '''
-    Gets recepient from email
-    '''
-    sender = msg.get("To") or msg.get("to")
+def GetRecepient(email: EmailMessage)->str:
+    """
+    Extracts the recipient's address from the 'To' header of an email message.
 
-    return sender
+    Args:
+        msg (EmailMessage): The parsed email message object.
+
+    Returns:
+        str: The content of the 'To' header, which may include the
+             recipient's name and email address.
+    """
+    recepient = email.get("To") or email.get("to")
+
+    return recepient
