@@ -35,6 +35,25 @@ def CheckEMLEmail(path: str, wordList: list):
 
     return wordList
 
+
+def CheckWordsEML(email: EmailMessage, wordList: list):
+    r'''
+    Checks the words in the eml body
+    Adds all unique words that are not stopwords, 
+    and are valid with no special characters to the list
+
+    Args:
+        email: The email message to check
+        wordList: The list of words to update
+
+        '''
+
+    # Checks the words in body
+    bodyMessage = email 
+    if bodyMessage:
+        body = bodyMessage if isinstance(bodyMessage, str) else str(bodyMessage) # checks if the mail is a string if not will change into a string variable
+        CheckString(body, wordList)
+
 def CheckWords(mailList: list, wordList: list):
     r'''
     Check the words in the subject and body of all emails in the list
@@ -63,23 +82,6 @@ def CheckWords(mailList: list, wordList: list):
     CheckStopwords(wordList, "Lists/stopWords.txt")
 
 
-def CheckWordsEML(email: EmailMessage, wordList: list):
-    r'''
-    Checks the words in the eml body
-    Adds all unique words that are not stopwords, 
-    and are valid with no special characters to the list
-
-    Args:
-        email: The email message to check
-        wordList: The list of words to update
-
-        '''
-
-    # Checks the words in body
-    bodyMessage = email 
-    if bodyMessage:
-        body = bodyMessage if isinstance(bodyMessage, str) else str(bodyMessage) # checks if the mail is a string if not will change into a string variable
-        CheckString(body, wordList)
 
 
 def CheckString(string: str, wordList: list)-> list:
@@ -109,6 +111,22 @@ def CheckString(string: str, wordList: list)-> list:
 
     return wordList
 
+
+def IsValidWord(word: str)->bool:
+    r"""
+    Checks the word provided to see if it can be classified as a valid word.
+    Returns true if it is.
+    """
+    # remove very short codes (length <= 2)
+    if len(word) <= 2:
+        return False
+    
+    # removes tokens
+    if word.isupper() and len(word) <= 4:
+        return False
+
+    return True
+
 def CheckStopwords(wordList, path):
     r"""
     Checks and remove the words in the wordList against a list of Stopwords.
@@ -135,20 +153,6 @@ def CheckStopwords(wordList, path):
 
 
 
-def IsValidWord(word: str)->bool:
-    r"""
-    Checks the word provided to see if it can be classified as a valid word.
-    Returns true if it is.
-    """
-    # remove very short codes (length <= 2)
-    if len(word) <= 2:
-        return False
-    
-    # removes tokens
-    if word.isupper() and len(word) <= 4:
-        return False
-
-    return True
 
 def WriteToFile(words, path:str):
     '''Write the dictionary/list to a file
@@ -200,7 +204,7 @@ def ConvertFileToList(path: str)-> list:
     return wordList
 
 
-def CompileWordList(list1: list, list2: list):
+def CompileWordList(list1: str, list2: str):
     r"""Will add the 2 lists together for a compiled listing.
     Write the file out as compiledWordList.txt
     
