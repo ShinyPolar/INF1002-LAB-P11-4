@@ -2,7 +2,9 @@ r'''
 Module for calculating word weightage for suspicious word list
 Uses Log Odds smoothign for its weight.
 
-
+Key functionalities include:
+- Compiling a list of unique words from phishing and ham emails
+- Calculating word weightage using Log Odds Smoothing
 '''
 from collections import Counter
 import ParseEmail as pe
