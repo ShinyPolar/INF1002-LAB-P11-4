@@ -13,6 +13,28 @@ from email.message import EmailMessage
 import math
 
 
+
+def CheckEMLEmail(path: str, wordList: list):
+    r"""
+    Checks the directory of eml emails provided for unique words.
+    Returns the wordList after checking the EML emails.
+
+    Args:
+        wordList: The word list to check against the EML emails
+        path: The path to the directory containing the EML emails
+
+    Returns:
+        wordList: the updated word list after checking the EML emails
+    """
+    for f in os.listdir(path):
+        f = str(f)
+        newpath = os.path.join(path, f)
+        eml = pe.ParseSingleEML(newpath)
+        plain = pe.GetPlainText(eml)
+        CheckWordsEML(plain, wordList)
+
+    return wordList
+
 def CheckWords(mailList: list, wordList: list):
     r'''
     Check the words in the subject and body of all emails in the list
@@ -87,6 +109,46 @@ def CheckString(string: str, wordList: list)-> list:
 
     return wordList
 
+def CheckStopwords(wordList, path):
+    r"""
+    Checks and remove the words in the wordList against a list of Stopwords.
+    Stopwords are words commonly used in the english language.
+    eg. the, an, a, is, are, you, i, etc.
+
+    Args:
+        wordList: The word list to check against stopwords
+        path: The path to the stopwords file
+
+    Returns:
+        wordList: updated wordlist without stopwords
+    """
+    f = open(path, "r")
+    stopwordList = [line.strip() for line in f.readlines()]
+    f.close()
+
+    wordListCopy = wordList.copy()
+    for word in wordListCopy:
+        if word.lower() in stopwordList:
+            wordList.remove(word)
+
+    return wordList
+
+
+
+def IsValidWord(word: str)->bool:
+    r"""
+    Checks the word provided to see if it can be classified as a valid word.
+    Returns true if it is.
+    """
+    # remove very short codes (length <= 2)
+    if len(word) <= 2:
+        return False
+    
+    # removes tokens
+    if word.isupper() and len(word) <= 4:
+        return False
+
+    return True
 
 def WriteToFile(words, path:str):
     '''Write the dictionary/list to a file
@@ -117,23 +179,25 @@ def WriteToFile(words, path:str):
         print("Cannot write into file as format is not dict or list.")
     f.close()
 
-def EmailFreq(emailList: list)-> Counter:
+def ConvertFileToList(path: str)-> list:
     r"""
-    Computes email frequency of the words used.
+    Converts the file provided at the path to a list.
 
     Args:
-        emailList: The list of emails to count word frequency
+        path: the file path to read from
 
     Returns:
-        emailFrequency: A Counter object with word frequencies in the list of emails
+        wordList: the list of words read from the file
     """
 
-    emailFrequency = Counter()
-    for email in emailList:
-        wordList = pe.GetPlainText(email).split(" ")
-        emailFrequency.update(set(wordList))  # set -> document freq
-    return emailFrequency
-
+    wordList = []
+    file = open(path, 'r')
+    for line in file:
+        # removes the character \n at the end of the line
+        word = line.strip()
+        wordList.append(word)
+    file.close()
+    return wordList
 
 
 def CompileWordList(list1: list, list2: list):
@@ -158,87 +222,22 @@ def CompileWordList(list1: list, list2: list):
     WriteToFile(compiledWords, "Lists\compiledWordList.txt")
     return
 
-def CheckStopwords(wordList, path):
+def EmailFreq(emailList: list)-> Counter:
     r"""
-    Checks and remove the words in the wordList against a list of Stopwords.
-    Stopwords are words commonly used in the english language.
-    eg. the, an, a, is, are, you, i, etc.
+    Computes email frequency of the words used.
 
     Args:
-        wordList: The word list to check against stopwords
-        path: The path to the stopwords file
+        emailList: The list of emails to count word frequency
 
     Returns:
-        wordList: updated wordlist without stopwords
-    """
-    f = open(path, "r")
-    stopwordList = [line.strip() for line in f.readlines()]
-    f.close()
-
-    wordListCopy = wordList.copy()
-    for word in wordListCopy:
-        if word.lower() in stopwordList:
-            wordList.remove(word)
-
-    return wordList
-
-
-def IsValidWord(word: str)->bool:
-    r"""
-    Checks the word provided to see if it can be classified as a valid word.
-    Returns true if it is.
-    """
-    # remove very short codes (length <= 2)
-    if len(word) <= 2:
-        return False
-    
-    # removes tokens
-    if word.isupper() and len(word) <= 4:
-        return False
-
-    return True
-
-def ConvertFileToList(path: str)-> list:
-    r"""
-    Converts the file provided at the path to a list.
-
-    Args:
-        path: the file path to read from
-
-    Returns:
-        wordList: the list of words read from the file
+        emailFrequency: A Counter object with word frequencies in the list of emails
     """
 
-    wordList = []
-    file = open(path, 'r')
-    for line in file:
-        # removes the character \n at the end of the line
-        word = line.strip()
-        wordList.append(word)
-    file.close()
-    return wordList
-
-def CheckEMLEmail(path: str, wordList: list):
-    r"""
-    Checks the directory of eml emails provided for unique words.
-    Returns the wordList after checking the EML emails.
-
-    Args:
-        wordList: The word list to check against the EML emails
-        path: The path to the directory containing the EML emails
-
-    Returns:
-        wordList: the updated word list after checking the EML emails
-    """
-    for f in os.listdir(path):
-        f = str(f)
-        newpath = os.path.join(path, f)
-        eml = pe.ParseSingleEML(newpath)
-        plain = pe.GetPlainText(eml)
-        CheckWordsEML(plain, wordList)
-
-    return wordList
-
+    emailFrequency = Counter()
+    for email in emailList:
+        wordList = pe.GetPlainText(email).split(" ")
+        emailFrequency.update(set(wordList))  # set -> document freq
+    return emailFrequency
 
 def LogOddsSmoothing():
     r'''
