@@ -28,7 +28,6 @@
         .analysis-box{
             display: flex;
             flex: 2;
-            /*align-items: center;*/
             flex-direction: column;
             height: 10vh;
             color: red;
@@ -70,6 +69,7 @@
     </style>
     </head>
     <body style="background-color:#f0f0f0;">
+        <!-- to have 2 columns, left column for drag and drop, right area for display of scores -->
         <div style="display:flex; height: 40vh;">
             <div style="flex:1;">
             <h1>Phishing Email Detector</h1>
@@ -82,8 +82,8 @@
                 <button id="rerun-btn">Re-run Analysis</button>
             </div>
             </div>
-
-
+            
+            <!-- for the display of scores -->
             <div class="analysis-box">
                 <h1 class = "analysis-display">RISK SCORE: {{riskScore}}</h1>
                 <h1 class = "analysis-display">RISK SEVERITY: {{riskLvl}}</h1>
@@ -96,6 +96,7 @@
 
         </div>
 
+        <!-- for the display of email contents -->
         <div class="overall-display">
             <h1>Sender: {{sender}}</h1>
             <h1>Recepient: {{recepient}}</h1>
@@ -156,6 +157,7 @@
             uploadFile(file);
         }
 
+        /*Uploads the file to somewhere accessible, a sub folder*/
         function uploadFile(file) {
             let formData = new FormData();
             formData.append("file", file);
