@@ -203,7 +203,7 @@ if __name__=='__main__':
     #======= The code below is to be ran for a single file only =======
     file = "TestCases/testEmail4_edgecase.txt"
     MainWorkflow(file, riskScore)
-    app.run(debug=True)
+    app.run()
     
     #======= If remove print from every function except the final riskScore, it would be cleaner ======
     #======= If possible, make a print function for each module so that it                  ===========
