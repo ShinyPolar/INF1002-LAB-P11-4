@@ -51,7 +51,6 @@ def ScanSubject(email: EmailMessage):
 
     '''
     #Decodes the subject line. If it does not need to be decoded it will still pass
-    #risk score for subject and position based on the word doc
     subject = email['subject']
 
     subject = decode_header(subject)
@@ -59,6 +58,9 @@ def ScanSubject(email: EmailMessage):
     subject = ''.join(part.decode(charset or 'utf-8') if isinstance(part, bytes) else part for part, charset in subject)
     print(subject)
 
+    #Risk score for subject and position based on the wordWeightage.txt
+    #Loops through the words in WordWeightage.txt, 
+    # if word is found will be added to risk score
     global riskScoreSubject
 
     print(f"\n\nIn subject line:")
@@ -87,9 +89,11 @@ def ScanBody(email: EmailMessage):
     if not textToScan:
         textToScan = pe.GetCleanHTMLText(email) 
     textToScanList = textToScan.split()
+
+    #Risk score for body and position based on the wordWeightage.txt
     for word, weightage in suspiciousWords.items():
         if word in textToScanList:
-            foundWords.append(word)
+            foundWords.append(word) #If word is found would be added to foundWords list
 
             #add to risk score
             riskScoreBody += 5 * weightage

@@ -205,27 +205,3 @@ if __name__=='__main__':
     MainWorkflow(file, riskScore)
     app.run()
     
-    #======= If remove print from every function except the final riskScore, it would be cleaner ======
-    #======= If possible, make a print function for each module so that it                  ===========
-    #======= would be possible to print the results of each module separately           ===============
-    #======= and collate it at the end for a cleaner output                             ================
-
-    #======= The code below is to be ran for multiple files in a directory only===========
-    #directory = "..\easy_ham\easy_ham"
-    # directory = "..\hard_ham\hard_ham"
-    # counter = 0
-    # for f in os.listdir(directory):
-    #     #reset riskScore
-    #     riskScore = 0
-    #     file = os.path.join(directory, f)
-
-    #     #condition here in case we want to limit the number of files processed for testing or other purposes
-    #     if (counter == 5): 
-    #         break
-    #     counter += 1
-
-    #     #Print out the file being checked on so that if there is an error, we know which file it is
-    #     print(file)
-    #     MainWorkflow(file, riskScore)
-    #     print("\n\n")
-
