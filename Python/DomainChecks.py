@@ -95,16 +95,16 @@ def CheckSender(emailAdd:str):
 def Levenshtein(source: str, target: str) -> int:
     '''
     Compute the Levenshtein distance between two strings.
-    - The distance is the minimum number of insertions, deletions, 
+    - The distance represents the minimum number of insertions, deletions, 
       or substitutions required to transform one string into the other.
     - Used for detecting visual similarity between domains in phishing detection.
 
     Args:
-        source: The first string to compare
-        target: The second string to compare
+        source: The first string to compare.
+        target: The second string to compare.
 
     Returns:
-        distance value: integer value of 0 if identical, higher values indicate greater difference
+        An integer distance (0 if identical; larger values indicate greater difference).
     '''
 
     # Convert both strings to lowercase for case-insensitive comparison
@@ -113,35 +113,35 @@ def Levenshtein(source: str, target: str) -> int:
 
     # Ensure source is the longer string (for memory efficiency)
     if len(source) < len(target): # Swap if source is shorter than target
-        return Levenshtein(target, source) # Recursive call with swapped arguments
+        return Levenshtein(target, source)
 
-    # If target is empty, distance = remove all chars from source
+    # If target is empty, distance = remove all characters from source
     if len(target) == 0:
         return len(source) # Distance is the length of source (all deletions)
 
     # prev_distances[j] = distance between:
-    # first i-1 chars of source  and  first j chars of target
-    prevDistances = range(len(target) + 1)  # [0, 1, 2, ... len(target)]
+    # first i-1 characters of source and first j characters of target
+    prevDistances = range(len(target) + 1)
 
     # Loop through each character in the source string
     for srcIndex, srcChar in enumerate(source):
         # curr_distances[j] = distance between:
-        # first i chars of source  and  first j chars of target
-        # Start with cost of deleting all chars up to src_index
+        # first i characters of source and first j characters of target
+        # Initialize current row with deletion cost (removing all source chars up to srcIndex)
         currDistances = [srcIndex + 1]
 
-        # Loop through each character in the target string
+        # Loop through and compare against each character in the target string
         for tgtIndex, tgtChar in enumerate(target):
-            # Cost of inserting target[tgt_index] into source
+            # Cost of inserting target[tgtIndex] into source
             insertCost = prevDistances[tgtIndex + 1] + 1
 
-            # Cost of deleting source[src_index]
+            # Cost of deleting source[srcIndex]
             deleteCost = currDistances[tgtIndex] + 1
 
-            # Cost of substituting source[src_index] → target[tgt_index]
+            # Cost of substituting source[srcIndex] → target[tgtIndex]
             substituteCost = prevDistances[tgtIndex] + (srcChar != tgtChar)
 
-            # Pick the cheapest operation
+            # Choose the minimal operation cost
             currDistances.append(min(insertCost, deleteCost, substituteCost))
 
         # Move to the next row
