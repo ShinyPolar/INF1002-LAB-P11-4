@@ -127,7 +127,7 @@ def Levenshtein(source: str, target: str) -> int:
     for srcIndex, srcChar in enumerate(source):
         # curr_distances[j] = distance between:
         # first i characters of source and first j characters of target
-        # Initialize current row with deletion cost (removing all source chars up to srcIndex)
+        # Initialize current row with deletion cost (removing all source characters up to srcIndex)
         currDistances = [srcIndex + 1]
 
         # Loop through and compare against each character in the target string
