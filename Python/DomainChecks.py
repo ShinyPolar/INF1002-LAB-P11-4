@@ -153,25 +153,27 @@ def Levenshtein(source: str, target: str) -> int:
 def CheckSenderLevenshtein(sender:str, whiteList:list, riskScore:int):
     '''
     Check if the sender's email domain is visually similar to any whitelisted domain.
-    - If similarity is detected (edit distance ≤ threshold): add penalty to riskScore.
+    - If the domain is suspiciously close (Levenshtein distance ≤ 2), the risk score is increased to indicate possible spoofing.
     - If no similarity is detected: return original riskScore unchanged.
 
     Args:
-        sender: Sender's email address
-        whiteList: List containing whitelisted domain names
-        riskScore: Current accumulated risk score
+        sender: Sender's email address.
+        whiteList: List containing trusted (whitelisted) domain names.
+        riskScore: Current accumulated risk score.
 
     Returns:
         riskScore: integer value of 20 if sender's email domain is suspiciously similar to whitelist, else 0
-        riskScore: integer value of 20 if sender's email domain is suspiciously similar to whitelist, else 0
     '''
+    # Extract domain part of sender email and normalize to lowercase
     domain = sender.split("@")[-1].lower()
+    
     for w in whiteList:
-        distance = Levenshtein(domain,w) # using custom levenshtein function to compute edit distance
-        if distance <= 2: # threshold for flagging as suspicious (allowing for minor typos)
+        distance = Levenshtein(domain, w) # Compute edit distance using custom Levenshtein function
+
+        if distance <= 2: # Flag as suspicious if domain is too similar (distance ≤ 2, allowing for minor typos)
             print(f"Sender email {sender} is similar to {w} as levenshtein distance is {distance}.") # flag as suspicious and add penalty to risk score
-            riskScore += 20 # penalty for failing edit distance check
-            return riskScore # return updated risk score if sender email is similar to any whitelisted domains
+            riskScore += 20 # Penalty for failing edit distance check
+            return riskScore # Return updated risk score once a match is found
 
     print("Sender email passed edit distance check")
-    return riskScore # return original risk score if sender email is not similar to any whitelisted domains
+    return riskScore # Return original risk score if sender email is not similar to any whitelisted domains
